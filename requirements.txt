@@ -1,0 +1,12 @@
+astropy
+numpy
+matplotlib
+scipy
+ipywidgets
+ipympl
+traitlets
+ipython
+pandas
+tqdm
+plotly
+tables
