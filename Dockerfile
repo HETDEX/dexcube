@@ -31,11 +31,8 @@ USER ${NB_USER}
 
 # Install Python dependencies
 
-RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install tapipy --ignore-installed certifi
 RUN pip install --upgrade jupyterlab jupyterlab_server jupyter_server traitlets nbformat
-
-COPY notebooks/README.md /home/jovyan/notebooks/README.md
 
 # Set the default command to start JupyterLab
 CMD ["start.sh", "jupyter", "lab", "--NotebookApp.default_url=/lab/tree/notebooks/README.md"]
