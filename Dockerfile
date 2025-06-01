@@ -13,15 +13,16 @@ USER jovyan
 
 RUN echo 'PS1="\w $ "' >> ~/.bashrc
 
-# Install Python dependencies
+WORKDIR /home/jovyan/dexcube
+
+# Copy requirements before installing
+COPY requirements.txt requirements.txt
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-
-# Set working directory
-WORKDIR ${HOME}/dexcube
-
-# Copy repository contents into the container
-COPY . ${HOME}/dexcube
+# Now copy the rest of the project
+COPY . .
 
 # Change ownership to the notebook user
 USER root
