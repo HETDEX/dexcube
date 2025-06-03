@@ -21,8 +21,8 @@ COPY requirements.txt requirements.txt
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Now copy the rest of the project
 COPY . .
+COPY ./notebooks/README.md README.md
 
 # Change ownership to the notebook user
 USER root
@@ -34,19 +34,17 @@ USER ${NB_USER}
 RUN pip install tapipy --ignore-installed certifi
 RUN pip install --upgrade jupyterlab jupyterlab_server jupyter_server traitlets nbformat
 
-# Set the default command to start JupyterLab
-CMD ["start.sh", "jupyter", "lab", "--NotebookApp.default_url=/lab/tree/notebooks/README.md"]
-
 RUN export HOME='/home/jovyan'
 
 RUN echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
 
 WORKDIR /home/jovyan
 
-RUN chown -R jovyan /home/jovyan/ && \
-    chmod 777 /home/jovyan && \ 
-    chmod -R 777 /home/jovyan/.config/ && \
-    chmod -R 777 /home/jovyan/.cache/matplotlib/ && \
-    chmod -R 777 /home/jovyan/.cache/
+USER root
 
+RUN chown -R jovyan /home/jovyan/ && \
+    chmod 777 /home/jovyan
+    
 USER jovyan
+
+
