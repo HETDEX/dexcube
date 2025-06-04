@@ -3,3 +3,4 @@ pdr1/
 urls.txt
 .ipynb_checkpoints/
 .DS_Store
+hetdex_widgets/__pycache__/
