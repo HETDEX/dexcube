@@ -1,4 +1,5 @@
 astropy
+astrowidgets
 numpy
 matplotlib
 scipy
