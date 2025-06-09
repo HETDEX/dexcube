@@ -1,3 +1,4 @@
+anywidget
 astropy
 astrowidgets
 numpy
