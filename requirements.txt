@@ -1,9 +1,10 @@
+anywidget
 astropy
 astrowidgets
 numpy
 matplotlib
 scipy
-ipywidgets==8.1.2
+ipywidgets
 ipympl
 traitlets
 ipython
