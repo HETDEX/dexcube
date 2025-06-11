@@ -1,6 +1,6 @@
 # Copyright (c) HETDEX Data Team
 
-ARG BASE_CONTAINER=quay.io/jupyter/scipy-notebook:2024-11-04
+ARG BASE_CONTAINER=quay.io/jupyter/scipy-notebook
 FROM $BASE_CONTAINER
 
 LABEL maintainer="Erin Mentuch Cooper <erin@astro.as.utexas.edu>"
@@ -22,7 +22,6 @@ COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-COPY ./notebooks/README.md README.md
 
 # Change ownership to the notebook user
 USER root
@@ -43,8 +42,11 @@ WORKDIR /home/jovyan
 USER root
 
 RUN chown -R jovyan /home/jovyan/ && \
-    chmod 777 /home/jovyan
-    
+    chmod 777 /home/jovyan && \
+    chmod -R 777 /home/jovyan/dexcube && \ 
+    chmod -R 777 /home/jovyan/.config/ && \
+    chmod -R 777 /home/jovyan/.cache/
+
 USER jovyan
 
 
