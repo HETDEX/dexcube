@@ -9,14 +9,6 @@ These notebooks are meant to be opened sequentially – each one builds on the s
 - extraction of 1‑D spectra and emission‑line measurements
 - cross‑matching your detections to external catalogues
 
-
-## 🧭 What You'll Learn
-
-- How the HETDEX data cubes are structured and accessed
-- Tools for inspecting spectra and metadata
-- Interactive widgets for visual exploration
-- Best practices for working with low signal-to-noise 3D data
-
 ---
 
 ## 🗂 Notebook Guide
