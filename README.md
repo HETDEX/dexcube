@@ -79,14 +79,6 @@ Feel free to edit the provided **Dockerfile** to pin package versions or add ext
 
 ---
 
-## 🔑 Data Access
-
-HETDEX cubes are \~30 MB each and protected by a simple token‑based system.  External users can request read‑only access by emailing **hetdex‑**[**erin@astro.as.utexas.edu**](mailto\:erin@astro.as.utexas.edu).
-
-The notebooks will prompt you for your token the first time they try to download a file.  If you wish to skip the interactive prompt, set the `HETDEX_API_TOKEN` environment variable before launching Jupyter.
-
----
-
 ## 🤝 Contributing & Support
 
 - Pull requests are welcome – please open an Issue first if you plan major changes.
