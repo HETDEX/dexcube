@@ -4,3 +4,6 @@ urls.txt
 .ipynb_checkpoints/
 .DS_Store
 hetdex_widgets/__pycache__/
+changing_agn.png
+changing_agn_spec.png
+pdr1_decompressed.fits
