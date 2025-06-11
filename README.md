@@ -25,15 +25,15 @@ These notebooks are meant to be opened sequentially – each one builds on the s
 | ----- | ----------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | 01    | **01‑DataModel+IFU‑Index.ipynb**          | PDR data model & the master IFU index FITS file | Understand cube filenames, sky coverage and the columns you will use for programmatic searches.                 |
 | 02    | **02‑DownloadingCubes.ipynb**             | Authenticating and fetching cubes in bulk       | How to download and decompress FITS cubes.                                                                      |
-| 03    | **03‑DataCubeFormat.ipynb**               | Anatomy of a single cube                        | What’s in the 4 HDU extensions (DATA, ERROR, BITMASK); units; header keywords.                                  |
+| 03    | **03‑DataCubeFormat.ipynb**               | Anatomy of a single cube                        | What’s in the 3 HDU extensions (DATA, ERROR, BITMASK); units; header keywords.                                  |
 | 04    | **04‑MaskingOptions.ipynb**               | Quality & science masks                         | Build boolean masks from BITMASK bits                                                                           |
 | 05    | **05‑CubeWidget.ipynb**                   | Interactive exploration                         | A lightweight `CubeWidget` for browsing xyλ slices, clicking spaxels to see spectra, adjusting display scaling. |
 | 06    | **06‑CoordinateQuery.ipynb**              | Sky‑coordinate searches                         | Given an RA/Dec list, locate covering cubes/IFUs, open them, and overlay reference catalogues.                  |
 | 07    | **07‑CollapsingCubes.ipynb**              | Creating 2‑D images                             | Collapse along wavelength to make white‑light or narrow‑band maps; write the result as a FITS image.            |
 | 08    | **08‑ExtractingSpectra.ipynb**            | 1‑D spectral extraction                         | Example 1D spectral extraction, continuum subtraction and per‑pixel error propagation.                          |
 | 09    | **09‑BatchDownloads+Decompression.ipynb** | Scaling up                                      | Example to download multiple dexcubes and decompress them for most efficient access after downloading.          |
-| 10    | **10‑CatalogExtractions.ipynb**           | Building a source catalogue                     | Run line‑detection on many cubes, compile an Astropy Table, and save as ECSV/FITS.                              |
-| 11    | **11‑LAE‑Examples.ipynb**                 | Worked LAE science cases                        | Step‑by‑step selection of Ly‑α emitters, little‑qso rejection, basic number counts, and pretty plots.           |
+| 10    | **10‑CatalogExtractions.ipynb**           | Batch 1D spectral extractions from a catalog    | Extract spectra on many cubes, compile an Astropy Table, and save as ECSV/FITS.                                 |
+| 11    | **11‑LAE‑Examples.ipynb**                 | LAE Examples                                    | Finding a Ly‑α emitters from the catalog in the data cube                                                       |
 
 > **Tip** Open the notebooks in JupyterLab and *Run All* one at a time.  A small test cube is fetched automatically so you can experiment even without full‑survey access.
 
@@ -46,11 +46,10 @@ These notebooks are meant to be opened sequentially – each one builds on the s
 $ git clone https://github.com/HETDEX/dexcube.git
 $ cd dexcube
 $ pip install -r requirements.txt
-
+```
 The notebooks assume Python 3.10+, `astropy`, `numpy`, `matplotlib`, and `ipywidgets`.  All required packages are listed in *requirements.txt*.
 
 ---
-
 
 ## 🐳 Docker Setup
 
