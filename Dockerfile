@@ -45,7 +45,8 @@ RUN chown -R jovyan /home/jovyan/ && \
     chmod 777 /home/jovyan && \
     chmod -R 777 /home/jovyan/dexcube && \ 
     chmod -R 777 /home/jovyan/.config/ && \
-    chmod -R 777 /home/jovyan/.cache/
+    chmod -R 777 /home/jovyan/.cache/ && \
+    chmod -R 777 /home/jovyan/work/
 
 USER jovyan
 
