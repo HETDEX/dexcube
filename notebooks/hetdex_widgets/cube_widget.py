@@ -100,6 +100,7 @@ class CubeWidget(ImageWidget):
         self.show_rainbow = show_rainbow
         self.single_plots = False
         self.cuts = 'stddev'
+        self._internal_update = False  # guard to avoid feedback loops
 
         # ---- Index-based controls (robust to any units) ----
         self.idx_widget = widgets.IntSlider(
@@ -138,8 +139,36 @@ class CubeWidget(ImageWidget):
         self.line_plot = go.FigureWidget()
         self.line_plot.update_layout(template='none')
 
-        # Big wavelength label above the line plot
-        self.wave_title = widgets.HTML()
+        # === Editable wavelength box (above the plot) ===
+        # Use Å symbol explicitly
+        self.wave_label = widgets.HTML(
+            value=f"<div style='font-size:22px; font-weight:600; margin:0;'>λ [Å]</div>"
+        )
+        # bounds/step inferred from axis
+        self._wmin = float(min(self.wavelengths[0], self.wavelengths[-1]))
+        self._wmax = float(max(self.wavelengths[0], self.wavelengths[-1]))
+        self._wstep = float(abs(self.wavelengths[1] - self.wavelengths[0])) if self.nwave > 1 else 1.0
+        self.wave_input = widgets.BoundedFloatText(
+            value=round(float(self.wavelengths[self._cur_islice]), 1),  # one decimal
+            min=self._wmin, max=self._wmax, step=self._wstep,
+            layout=widgets.Layout(width='220px')
+        )
+        self.wave_input_box = widgets.HBox([self.wave_label, self.wave_input],
+                                           layout=widgets.Layout(align_items='center', gap='8px'))
+
+        def _on_wave_input(change):
+            if self._internal_update or change['name'] != 'value':
+                return
+            self._internal_update = True
+            try:
+                w = float(change['new'])
+                n = int(np.argmin(np.abs(self.wavelengths - w)))  # snap to nearest plane
+                self.idx_widget.value = n  # triggers show_slice via interactive link
+                self.wave_input.value = round(float(self.wavelengths[n]), 1)
+            finally:
+                self._internal_update = False
+
+        self.wave_input.observe(_on_wave_input, names='value')
 
         if self.show_rainbow:
             self.set_rainbow()
@@ -155,37 +184,56 @@ class CubeWidget(ImageWidget):
         )
         widgets.jslink((self.scan, "value"), (self.idx_widget, "value"))
 
+        # ---- Bottom-left: RA/Dec readout in degrees (always shown) ----
+        self.coord_readout = widgets.HTML(value="")
         # Layout
-        left_panel = widgets.VBox([widgets.HBox([self.idx_widget, self.scan]), self])
-        right_panel = widgets.VBox([self.wave_title, self.line_plot, self.smooth_slider, self.single_plot_button])
+        left_panel = widgets.VBox([
+            widgets.HBox([self.idx_widget, self.scan]),
+            self,
+            self.coord_readout,  # bottom-left readout
+        ])
+        right_panel = widgets.VBox([self.wave_input_box, self.line_plot, self.smooth_slider, self.single_plot_button])
         self.all_box = widgets.HBox([left_panel, right_panel])
         display(self.all_box)
 
-        # Initialize wavelength label once UI is shown
-        self._update_wave_label()
+        # Initialize readouts
+        self._update_wave_input()
+        self._update_coord_readout()
 
         # Observers
         self.smooth_slider.observe(self.plot_spec, names='value')
 
+    
     def load_nddata(self, nddata, n=0):
         self.image = AstroImage()
         self.image.load_nddata(nddata, naxispath=[n])
         self._viewer.set_image(self.image)
+        
 
     def _mouse_click_cb(self, viewer, event, data_x, data_y):
         self._cur_ix = int(round(data_x))
         self._cur_iy = int(round(data_y))
+        # Plot first so the new line gets added (and we can grab its color)
         self.plot_spec()
 
         if self.single_plot_button.value:
             self.reset_markers()
-
+        
         if self._cur_ix is not None and self._cur_iy is not None:
             mrk_tab = Table(names=["x", "y"])
             mrk_tab.add_row([self._cur_ix, self._cur_iy])
-            self.marker = {"color": 'red', "radius": 1, "type": "circle"}
+            spec_color = getattr(self, "_last_trace_color", "#FF0000")  # fallback red
+            self.marker = {
+                "color": spec_color,
+                "radius": 2,     # still controls the circle size
+                "width": 3,      # <-- NEW: outline/line thickness
+                "type": "circle"
+            }
             self.add_markers(mrk_tab)
 
+        self._update_coord_readout()
+
+    
     def plot_spec(self, trace_freeze=False):
         if self._cur_ix is None or self._cur_iy is None:
             return
@@ -205,27 +253,49 @@ class CubeWidget(ImageWidget):
         if trace_freeze is False:
             if self.single_plot_button.value:
                 self.line_plot.data = []
-
+        
+            hover_tmpl = (
+                "λ = %{x:.1f} Å<br>"
+                "fλ = %{y:.4g} (1e-17 erg s⁻¹ cm⁻² Å⁻¹)"
+                "<extra></extra>"
+            )
+        
+            line_color = self._get_next_trace_color()
             self.line_plot.add_trace(
                 go.Scatter(
                     x=self.wavelengths,
                     y=spectrum,
                     mode="lines",
-                    name=f"X={self._cur_ix} Y={self._cur_iy}"
+                    name="",
+                    hovertemplate=hover_tmpl,
+                    line=dict(color=line_color),  # <-- set explicit color
                 )
             )
-            self.line_plot.update_traces(hoverinfo="text+name", mode="lines")
-            xlab_unit = self.display_unit.to_string()
+            # Remember for the matching image marker
+            self._last_trace_color = line_color
+        
+            self.line_plot.update_traces(mode="lines")
             self.line_plot.update_layout(
-                xaxis_title=f"wavelength [{xlab_unit}]",
+                xaxis_title="wavelength [Å]",
                 yaxis_title="fλ (1e-17 erg s⁻¹ cm⁻² Å⁻¹)"
             )
+
 
         # Vertical line at current slice wavelength
         x_vline = self.wavelengths[self._cur_islice]
         self.line_plot.layout.shapes = []  # clear previous vline
         self.line_plot.add_vline(x=x_vline, line_color="grey", line_width=2)
 
+    def _get_next_trace_color(self):
+        # Use explicit colorway so we know the exact hex values
+        colorway = (list(self.line_plot.layout.colorway)
+                    if getattr(self.line_plot.layout, "colorway", None)
+                    else ['#636EFA','#EF553B','#00CC96','#AB63FA','#FFA15A',
+                          '#19D3F3','#FF6692','#B6E880','#FF97FF','#FECB52'])
+        idx = len(self.line_plot.data)  # index of the trace we’re about to add
+        return colorway[idx % len(colorway)]
+
+        
     def set_rainbow(self):
         try:
             wav_A = (self.wavelengths * self.display_unit).to(u.AA).value
@@ -243,20 +313,43 @@ class CubeWidget(ImageWidget):
         self.image.set_naxispath([n])
         self._viewer.redraw(whence=0)
         self._cur_islice = int(n)
-        self._update_wave_label()  # keep λ label in sync with displayed slice
+        self._update_wave_input()
+        self._update_coord_readout()
 
     def show_slice(self, idx):
         idx = int(np.clip(idx, 0, self.nwave - 1))
         self.image_show_slice(idx)
         self.plot_spec(trace_freeze=True)  # refresh vline, keep existing traces
-        self._update_wave_label()          # also update after slider/Play drives show_slice
 
-    # ---------- helper: wavelength label ----------
-    def _update_wave_label(self):
-        """Show the current slice's wavelength above the 1D plot."""
-        lam = float(self.wavelengths[int(getattr(self, "_cur_islice", 0))])
-        unit = self.display_unit.to_string()
-        self.wave_title.value = (
-            f"<div style='font-size:22px; font-weight:600; line-height:1.1; "
-            f"margin:0 0 6px 0;'>λ = {lam:.1f} {unit}</div>"
-        )
+    # ---------- helpers ----------
+    def _update_wave_input(self):
+        """Update the editable wavelength textbox from current slice, rounding to 0.1."""
+        if not hasattr(self, "wave_input"):
+            return
+        val = round(float(self.wavelengths[int(getattr(self, "_cur_islice", 0))]), 1)
+        if self._internal_update:
+            self.wave_input.value = val
+        else:
+            self._internal_update = True
+            try:
+                self.wave_input.value = val
+            finally:
+                self._internal_update = False
+
+    def _update_coord_readout(self):
+        """Update bottom-left readout with RA/Dec in degrees."""
+        if not hasattr(self, "coord_readout"):
+            return
+        if self._cur_ix is None or self._cur_iy is None:
+            self.coord_readout.value = "<span style='opacity:0.6'>click to show coordinates (deg)</span>"
+            return
+        try:
+            ra, dec, _ = self.wcs.all_pix2world(
+                np.array([self._cur_ix], dtype=float),
+                np.array([self._cur_iy], dtype=float),
+                np.array([self._cur_islice], dtype=float),
+                0
+            )
+            self.coord_readout.value = f"<b>RA</b> = {ra[0]:.6f}° &nbsp; <b>Dec</b> = {dec[0]:.6f}°"
+        except Exception:
+            self.coord_readout.value = "<span style='opacity:0.6'>WCS conversion failed</span>"
