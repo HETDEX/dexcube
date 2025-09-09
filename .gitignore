@@ -9,3 +9,5 @@ changing_agn_spec.png
 pdr1_decompressed.fits
 sdss_agn_spectra_3.5arcsec.fits
 pipelinecomps.ipynb
+notebooks/__pycache__/
+notebooks/dexcube/__pycache__/
