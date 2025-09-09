@@ -43,3 +43,58 @@ These notebooks are meant to be opened sequentially – each one builds on the s
 $ git clone https://github.com/HETDEX/dexcube.git
 $ cd dexcube
 $ pip install -r requirements.txt
+```
+
+The notebooks assume Python 3.10+, `astropy`, `numpy`, `matplotlib`, and `ipywidgets`.  
+All required packages are listed in *requirements.txt*. Launch JupyterLab from the repo root:
+
+```bash
+$ jupyter lab notebooks/
+```
+
+---
+
+## 🐳 Docker Setup
+
+If you prefer a fully self-contained environment you can run all notebooks inside a Docker container. Two options are provided.
+
+### A) Run the pre-built image (recommended)
+
+```bash
+# 1) grab the latest HETDEX Jupyter image
+$ docker pull ghcr.io/hetdex/hetdex-jupyter:latest
+
+# 2) launch JupyterLab, mapping port 8888 and your working dir
+$ docker run -it --rm \
+    -p 8888:8888 \
+    -v $(pwd):/workspace \
+    -e HETDEX_API_TOKEN=$HETDEX_API_TOKEN \
+    ghcr.io/hetdex/hetdex-jupyter:latest
+```
+
+The server prints a URL with a token; open it in your browser (usually `http://localhost:8888`).  
+Your current directory is mounted inside the container as `/workspace`, so any changes you make to notebooks or data persist on your host.
+
+### B) Build a local image from this repo
+
+```bash
+$ git clone https://github.com/HETDEX/dexcube.git
+$ cd dexcube
+# build the image (takes ~5 min the first time)
+$ docker build -t dexcube:latest .
+
+# run it exactly as above
+$ docker run -it --rm -p 8888:8888 -v $(pwd):/workspace dexcube:latest
+```
+
+Feel free to edit the provided **Dockerfile** to pin package versions or add extra libraries.
+
+---
+
+## 🤝 Contributing & Support
+
+- Pull requests are welcome – please open an Issue first if you plan major changes.  
+- If something breaks, raise a GitHub Issue with the notebook name and the cell that failed.  
+
+Released under the MIT License.  
+© 2025 HETDEX Collaboration.
