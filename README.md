@@ -2,11 +2,6 @@
 
 ![CubeWidget demo](notebooks/cubewidget-demo.gif)
 
-<p align="center">
-  <img src="notebooks/cubewidget.gif" alt="CubeWidget demo"
-       onerror="this.onerror=null; this.src='notebooks/cubewidget.png';" />
-</p>
-
 Welcome to **dexcube**: a hands-on set of Jupyter notebooks that teach you how to *find, download, and analyse* the 3-D IFU (Integral Field Unit) datacubes in the HETDEX Public Data Release (PDR 1).
 
 These notebooks are meant to be opened sequentially – each one builds on the skills and files created in the previous step. In a couple of hours you will go from an empty working directory to:
