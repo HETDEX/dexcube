@@ -1,6 +1,6 @@
 # 🌌 HETDEX Public Data Release — Cube Tutorial
 
-![CubeWidget demo](docs/cubewidget-demo.png)
+![CubeWidget demo](docs/cubewidget-demo.gif)
 
 Welcome to **dexcube**: a hands-on set of Jupyter notebooks that teach you how to *find, download, and analyse* the 3-D IFU (Integral Field Unit) datacubes in the HETDEX Public Data Release (PDR 1).
 
