@@ -1,6 +1,6 @@
 # 🌌 HETDEX Public Data Release — Cube Tutorial
 
-![CubeWidget demo](docs/cubewidget-demo.gif)
+![CubeWidget demo](notebooks/cubewidget-demo.gif)
 
 Welcome to **dexcube**: a hands-on set of Jupyter notebooks that teach you how to *find, download, and analyse* the 3-D IFU (Integral Field Unit) datacubes in the HETDEX Public Data Release (PDR 1).
 
@@ -8,7 +8,8 @@ These notebooks are meant to be opened sequentially – each one builds on the s
 
 - a local subset of PDR cubes  
 - interactive visual exploration of flux, variance and metadata  
-- extraction of 1-D spectra and emission-line measurements  
+- extraction of 1D spectra
+- generation of 2D line flux maps
 - access to the official HETDEX Source Catalog  
 - quick source look-up and cross-matching to external catalogues  
 - scaling up to batch downloads and large-catalog extractions  
