@@ -32,8 +32,14 @@ USER ${NB_USER}
 
 RUN pip install tapipy --ignore-installed certifi
 RUN pip install --upgrade jupyterlab jupyterlab_server jupyter_server traitlets nbformat
+RUN pip install grip
+RUN grip /home/jovyan/dexcube/README.md --export /home/jovyan/dexcube/README.html
 
-RUN export HOME='/home/jovyan'
+RUN cp /home/jovyan/dexcube/README.html /home/jovyan/README.html && \
+    mkdir -p /home/jovyan/.jupyter && \
+    printf "c.ServerApp.root_dir = '/home/jovyan'\n" \
+           "c.ServerApp.default_url = '/lab/tree/README.html'\n" \
+    > /home/jovyan/.jupyter/jupyter_server_config.py
 
 RUN echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
 
@@ -41,12 +47,7 @@ WORKDIR /home/jovyan
 
 USER root
 
-RUN chown -R jovyan /home/jovyan/ && \
-    chmod 777 /home/jovyan && \
-    chmod -R 777 /home/jovyan/dexcube && \ 
-    chmod -R 777 /home/jovyan/.config/ && \
-    chmod -R 777 /home/jovyan/.cache/ && \
-    chmod -R 777 /home/jovyan/work/
+RUN chown -R jovyan:users /home/jovyan
 
 USER jovyan
 
