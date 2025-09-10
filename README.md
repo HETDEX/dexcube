@@ -69,7 +69,7 @@ docker run --pull always -p 8888:8888 -v "$PWD":/home/jovyan/work -it hetdex/dex
 
 ```
 
-The server prints a URL with a token; open it in your browser (usually `http://localhost:8888`).  
+The server prints a URL with a token; open it in your browser (usually `http://127.0.0.1:8888/lab?file-browser-path=README.htm`).  
 Your current directory is mounted inside the container as `/workspace`, so any changes you make to notebooks or data persist on your host.
 
 ### B) Build a local image from this repo
