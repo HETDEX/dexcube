@@ -59,18 +59,14 @@ $ jupyter lab notebooks/
 
 If you prefer a fully self-contained environment you can run all notebooks inside a Docker container. Two options are provided.
 
-### A) Run the pre-built image (recommended)
+### A) Run the pre-built image (recommended). The PDR1 products will be downloaded into the directory $PWD/pdr1, and will be located in work directory within the container.
 
 ```bash
-# 1) grab the latest HETDEX Jupyter image
-$ docker pull ghcr.io/hetdex/hetdex-jupyter:latest
+docker run --pull always -p 8888:8888 -v "$PWD":/home/jovyan/work -it hetdex/dexcube:latest \
+  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' \
+  --ServerApp.root_dir=/home/jovyan \
+  --ServerApp.default_url=/lab/tree/work/README.md
 
-# 2) launch JupyterLab, mapping port 8888 and your working dir
-$ docker run -it --rm \
-    -p 8888:8888 \
-    -v $(pwd):/workspace \
-    -e HETDEX_API_TOKEN=$HETDEX_API_TOKEN \
-    ghcr.io/hetdex/hetdex-jupyter:latest
 ```
 
 The server prints a URL with a token; open it in your browser (usually `http://localhost:8888`).  
@@ -85,7 +81,10 @@ $ cd dexcube
 $ docker build -t dexcube:latest .
 
 # run it exactly as above
-$ docker run -it --rm -p 8888:8888 -v $(pwd):/workspace dexcube:latest
+$ docker run -it --rm -p 8888:8888 -v "$PWD":/home/jovyan/work -it hetdex/dexcube:latest \
+  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' \
+  --ServerApp.root_dir=/home/jovyan \
+  --ServerApp.default_url=/lab/tree/work/README.md
 ```
 
 Feel free to edit the provided **Dockerfile** to pin package versions or add extra libraries.
