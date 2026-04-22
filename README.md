@@ -53,6 +53,8 @@ All required packages are listed in *requirements.txt*. Launch JupyterLab from t
 $ jupyter lab notebooks/
 ```
 
+---
+
 ## 🤖 LLM & Programmatic Access Context
 
 For AI-assisted analysis, automated pipelines, or a quick orientation to the data
@@ -70,43 +72,74 @@ If you are using Claude Code, Cursor, or another LLM coding assistant, the
 [`CLAUDE.md`](./CLAUDE.md) file in this repo root is loaded automatically and
 provides the critical facts needed to generate correct HETDEX analysis code.
 
+---
 
 ## 🐳 Docker Setup
 
-If you prefer a fully self-contained environment you can run all notebooks inside a Docker container. Two options are provided.
+If you prefer a fully self-contained environment, run all notebooks inside a
+Docker container. Two options are provided.
 
-### A) Run the pre-built image (recommended). The PDR1 products will be downloaded into the directory $PWD/pdr1, and will be located in work directory within the container.
+PDR1 data is downloaded to and read from `work/pdr1/` inside the container,
+which maps to `./work/pdr1/` in your current directory on the host — matching
+the path layout used on the TACC JupyterHub. Run the docker command from the
+root of this cloned repo.
 
+### A) Run the pre-built image (recommended)
+
+**Linux / Intel Mac:**
 ```bash
 docker run --pull always --rm -p 8888:8888 \
-  -v "$PWD":/home/jovyan/work \
+  -v "$PWD/work/pdr1":/home/jovyan/work/pdr1 \
   hetdex/dexcube:latest \
   jupyter lab --ip=0.0.0.0 --port=8888 --no-browser \
-  --NotebookApp.token='' \
-  --ServerApp.root_dir=/home/jovyan/work \
-  --ServerApp.default_url=/lab/tree/README.md
-
+  --NotebookApp.token=''
 ```
 
-The server prints a URL with a token; open it in your browser (usually `http://127.0.0.1:8888/lab?file-browser-path=README.htm`).  
-Your current directory is mounted inside the container as `/workspace`, so any changes you make to notebooks or data persist on your host.
+**Apple Silicon Mac (M1/M2/M3/M4):**
+```bash
+docker run --pull always --rm -p 8888:8888 \
+  --platform linux/amd64 \
+  -v "$PWD/work/pdr1":/home/jovyan/work/pdr1 \
+  hetdex/dexcube:latest \
+  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser \
+  --NotebookApp.token=''
+```
+
+> The image is built for Linux/AMD64 to match the TACC JupyterHub environment.
+> Apple Silicon Macs run it via Rosetta 2 emulation — it works correctly but
+> requires the `--platform linux/amd64` flag.
+
+Open the URL printed in the terminal (usually `http://127.0.0.1:8888`).
+Any PDR1 data downloaded inside the container will persist in `./work/pdr1/`
+on your host machine.
 
 ### B) Build a local image from this repo
 
 ```bash
-$ git clone https://github.com/HETDEX/dexcube.git
-$ cd dexcube
-# build the image (takes ~5 min the first time)
-$ docker build -t dexcube:latest .
+git clone https://github.com/HETDEX/dexcube.git
+cd dexcube
 
-# run it exactly as above
-$ docker run -it --rm -p 8888:8888 -v "$PWD":/home/jovyan/work -it hetdex/dexcube:latest \
-  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' \
-  --ServerApp.root_dir=/home/jovyan \
-  --ServerApp.default_url=/lab/tree/work/README.md
+# Build the image (takes ~5 min the first time)
+docker build --platform linux/amd64 -t dexcube:latest .
+
+# Linux / Intel Mac
+docker run --rm -p 8888:8888 \
+  -v "$PWD/work/pdr1":/home/jovyan/work/pdr1 \
+  dexcube:latest \
+  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser \
+  --NotebookApp.token=''
+
+# Apple Silicon Mac
+docker run --rm -p 8888:8888 \
+  --platform linux/amd64 \
+  -v "$PWD/work/pdr1":/home/jovyan/work/pdr1 \
+  dexcube:latest \
+  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser \
+  --NotebookApp.token=''
 ```
 
-Feel free to edit the provided **Dockerfile** to pin package versions or add extra libraries.
+Feel free to edit the provided **Dockerfile** to pin package versions or add
+extra libraries.
 
 ---
 
