@@ -3,7 +3,7 @@
 ARG BASE_CONTAINER=quay.io/jupyter/scipy-notebook
 FROM $BASE_CONTAINER
 
-LABEL maintainer="Erin Mentuch Cooper <erin@astro.as.utexas.edu>"
+LABEL maintainer="Erin Mentuch Cooper <erin.hetdex@gmail.com>"
 
 USER root
 
