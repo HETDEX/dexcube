@@ -43,6 +43,14 @@ RUN cp /home/jovyan/dexcube/README.html /home/jovyan/README.html && \
 
 RUN echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
 
+# Install Jupyter AI with Anthropic and OpenAI backends
+# Users pass API keys at runtime via -e ANTHROPIC_API_KEY=... or -e OPENAI_API_KEY=...
+RUN pip install jupyter-ai[anthropic,openai] anthropic openai
+ 
+# Copy HETDEX context files for LLM-assisted analysis
+COPY HETDEX_CONTEXT.md /home/jovyan/HETDEX_CONTEXT.md
+COPY CLAUDE.md /home/jovyan/CLAUDE.md
+
 WORKDIR /home/jovyan
 
 USER root
