@@ -53,7 +53,23 @@ All required packages are listed in *requirements.txt*. Launch JupyterLab from t
 $ jupyter lab notebooks/
 ```
 
----
+## 🤖 LLM & Programmatic Access Context
+
+For AI-assisted analysis, automated pipelines, or a quick orientation to the data
+model, see [`HETDEX_CONTEXT.md`](./HETDEX_CONTEXT.md). It contains:
+
+- Survey parameters, field coordinates, and sky coverage
+- Complete datacube format (HDU structure, exact dimensions, units, WCS notes)
+- Full bitmask table with recommended masking strategies
+- IFU index file schema and a coordinate query code example
+- HPSC2 source catalog column descriptions
+- Data paths for all access environments (JupyterHub, TACC, Docker)
+- Common errors and gotchas
+
+If you are using Claude Code, Cursor, or another LLM coding assistant, the
+[`CLAUDE.md`](./CLAUDE.md) file in this repo root is loaded automatically and
+provides the critical facts needed to generate correct HETDEX analysis code.
+
 
 ## 🐳 Docker Setup
 
@@ -62,10 +78,13 @@ If you prefer a fully self-contained environment you can run all notebooks insid
 ### A) Run the pre-built image (recommended). The PDR1 products will be downloaded into the directory $PWD/pdr1, and will be located in work directory within the container.
 
 ```bash
-docker run --pull always -p 8888:8888 -v "$PWD":/home/jovyan/work -it hetdex/dexcube:latest \
-  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' \
-  --ServerApp.root_dir=/home/jovyan \
-  --ServerApp.default_url=/lab/tree/work/README.md
+docker run --pull always --rm -p 8888:8888 \
+  -v "$PWD":/home/jovyan/work \
+  hetdex/dexcube:latest \
+  jupyter lab --ip=0.0.0.0 --port=8888 --no-browser \
+  --NotebookApp.token='' \
+  --ServerApp.root_dir=/home/jovyan/work \
+  --ServerApp.default_url=/lab/tree/README.md
 
 ```
 
@@ -96,5 +115,47 @@ Feel free to edit the provided **Dockerfile** to pin package versions or add ext
 - Pull requests are welcome – please open an Issue first if you plan major changes.  
 - If something breaks, raise a GitHub Issue with the notebook name and the cell that failed.  
 
+
+## 📜 Acknowledgements
+
+If you use HETDEX PDR1 data products in your research, please include the
+following acknowledgement text and citations in your paper.
+
+### Required Citations
+
+- **HETDEX Survey**: Gebhardt et al. 2021, ApJ 923, 217 — [doi:10.3847/1538-4357/ac2e03](https://doi.org/10.3847/1538-4357/ac2e03)
+- **VIRUS Instrument**: Hill et al. 2021, AJ 162, 298 — [doi:10.3847/1538-3881/ac2c02](https://doi.org/10.3847/1538-3881/ac2c02)
+- **PDR1 Data Release**: Mentuch Cooper et al. 2026 (submitted) — [doi:10.5281/zenodo.19581262](https://doi.org/10.5281/zenodo.19581262)
+
+For a full list of citation guidelines see [hetdex.org/papers](https://hetdex.org/papers/).
+
+### Required Acknowledgement Text
+
+> HETDEX is led by the University of Texas at Austin McDonald Observatory and
+> Department of Astronomy with participation from the
+> Ludwig-Maximilians-Universität München, Max-Planck-Institut für
+> Extraterrestrische Physik (MPE), Leibniz-Institut für Astrophysik Potsdam
+> (AIP), Texas A&M University, The Pennsylvania State University, Institut für
+> Astrophysik Göttingen, The University of Oxford, Max-Planck-Institut für
+> Astrophysik (MPA), The University of Tokyo, and Missouri University of Science
+> and Technology.
+>
+> Observations for HETDEX were obtained with the Hobby-Eberly Telescope (HET),
+> which is a joint project of the University of Texas at Austin, the Pennsylvania
+> State University, Ludwig-Maximilians-Universität München, and
+> Georg-August-Universität Göttingen. The HET is named in honor of its principal
+> benefactors, William P. Hobby and Robert E. Eberly.
+>
+> The Visible Integral-field Replicable Unit Spectrograph (VIRUS) was used for
+> HETDEX observations. VIRUS is a joint project of the University of Texas at
+> Austin, Leibniz-Institut für Astrophysik Potsdam (AIP), Texas A&M University
+> (TAMU), Max-Planck-Institut für Extraterrestrische Physik (MPE),
+> Ludwig-Maximilians-Universität München, Pennsylvania State University, Institut
+> für Astrophysik Göttingen, University of Oxford, and the Max-Planck-Institut
+> für Astrophysik (MPA). In addition to institutional support, VIRUS was
+> partially funded by the National Science Foundation, the State of Texas, and
+> generous support from private individuals and foundations.
+
+
 Released under the MIT License.  
-© 2025 HETDEX Collaboration.
+© 2026 HETDEX Collaboration.
