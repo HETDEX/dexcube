@@ -7,7 +7,17 @@ LABEL maintainer="Erin Mentuch Cooper <erin.hetdex@gmail.com>"
 
 USER root
 
-RUN apt-get update && apt-get install -y poppler-utils
+# Install Node.js 20 (required for Claude ACP)
+RUN apt-get update && apt-get install -y \
+    poppler-utils \
+    curl \
+ && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+ && apt-get install -y nodejs \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Claude ACP agent for Jupyter AI personas
+RUN npm install -g @zed-industries/claude-agent-acp
 
 USER jovyan
 
@@ -44,8 +54,7 @@ RUN cp /home/jovyan/dexcube/README.html /home/jovyan/README.html && \
 RUN echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
 
 # Install Jupyter AI with Anthropic and OpenAI backends
-# Users pass API keys at runtime via -e ANTHROPIC_API_KEY=... or -e OPENAI_API_KEY=...
-RUN pip install jupyter-ai==2.28.0 anthropic openai
+RUN pip install jupyter-ai
  
 # Copy HETDEX context files for LLM-assisted analysis
 COPY HETDEX_CONTEXT.md /home/jovyan/HETDEX_CONTEXT.md
