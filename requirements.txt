@@ -13,3 +13,5 @@ tqdm
 plotly
 tables
 photutils
+jupyter-ai==2.28.0
+langchain-anthropic
