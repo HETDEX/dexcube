@@ -11,3 +11,4 @@ sdss_agn_spectra_3.5arcsec.fits
 pipelinecomps.ipynb
 notebooks/__pycache__/
 notebooks/dexcube/__pycache__/
+*.reg

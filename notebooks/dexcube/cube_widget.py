@@ -54,6 +54,8 @@ class CubeWidget(ImageWidget):
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._cur_ix = None
+        self._cur_iy = None
         # ---- Load data & WCS ----
         if hdu is not None:
             try:
@@ -194,7 +196,7 @@ class CubeWidget(ImageWidget):
         ])
         right_panel = widgets.VBox([self.wave_input_box, self.line_plot, self.smooth_slider, self.single_plot_button])
         self.all_box = widgets.HBox([left_panel, right_panel])
-        display(self.all_box)
+#        display(self.all_box)
 
         # Initialize readouts
         self._update_wave_input()
@@ -203,7 +205,11 @@ class CubeWidget(ImageWidget):
         # Observers
         self.smooth_slider.observe(self.plot_spec, names='value')
 
-    
+        #display(self.all_box)  # add back at the very end
+
+    def _ipython_display_(self, **kwargs):
+        display(self.all_box)    
+        
     def load_nddata(self, nddata, n=0):
         self.image = AstroImage()
         self.image.load_nddata(nddata, naxispath=[n])
