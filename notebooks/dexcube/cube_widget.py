@@ -205,7 +205,7 @@ class CubeWidget(ImageWidget):
         # Observers
         self.smooth_slider.observe(self.plot_spec, names='value')
 
-        #display(self.all_box)  # add back at the very end
+        #display(self.all_box)  # initialize in notebook
 
     def _ipython_display_(self, **kwargs):
         display(self.all_box)    
