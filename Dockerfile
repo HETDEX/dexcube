@@ -72,6 +72,10 @@ RUN chown -R jovyan /home/jovyan/ && \
     chmod -R 777 /home/jovyan/work/ && \
     chmod -R 770 /home/jovyan/.jupyter
 
+COPY start-hetdex.sh /usr/local/bin/start-hetdex.sh
+RUN chmod +x /usr/local/bin/start-hetdex.sh
+ENV JUPYTER_DOCKER_STACKS_STARTUP_CMD=/usr/local/bin/start-hetdex.sh
+
 USER jovyan
 
 
