@@ -1,6 +1,6 @@
 # Copyright (c) HETDEX Data Team
 
-ARG BASE_CONTAINER=quay.io/jupyter/scipy-notebook
+ARG BASE_CONTAINER=quay.io/jupyter/scipy-notebook:python-3.12
 FROM $BASE_CONTAINER
 
 LABEL maintainer="Erin Mentuch Cooper <erin.hetdex@gmail.com>"
@@ -54,7 +54,7 @@ RUN cp /home/jovyan/dexcube/README.html /home/jovyan/README.html && \
 RUN echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
 
 # Install Jupyter AI with Anthropic and OpenAI backends
-RUN pip install jupyter-ai
+RUN pip install jupyter-ai==3.0.0 langchain-anthropic anthropic
  
 # Copy HETDEX context files for LLM-assisted analysis
 COPY HETDEX_CONTEXT.md /home/jovyan/HETDEX_CONTEXT.md
@@ -71,6 +71,10 @@ RUN chown -R jovyan /home/jovyan/ && \
     chmod -R 777 /home/jovyan/.cache/ && \
     chmod -R 777 /home/jovyan/work/ && \
     chmod -R 770 /home/jovyan/.jupyter
+
+COPY start-hetdex.sh /usr/local/bin/start-hetdex.sh
+RUN chmod +x /usr/local/bin/start-hetdex.sh
+ENV JUPYTER_DOCKER_STACKS_STARTUP_CMD=/usr/local/bin/start-hetdex.sh
 
 USER jovyan
 
