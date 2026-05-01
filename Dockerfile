@@ -64,19 +64,15 @@ WORKDIR /home/jovyan
 
 USER root
 
-
+USER root
 RUN chown -R jovyan /home/jovyan/ && \
     chmod 777 /home/jovyan && \
-    chmod -R 777 /home/jovyan/dexcube && \ 
+    chmod -R 777 /home/jovyan/dexcube && \
     chmod -R 777 /home/jovyan/.config/ && \
     chmod -R 777 /home/jovyan/.cache/ && \
     chmod -R 777 /home/jovyan/work/ && \
     chmod -R 777 /home/jovyan/.jupyter && \
-    chmod -R 777 /home/jovyan/.jupyter/mcp_settings.json
-
-COPY start-hetdex.sh /usr/local/bin/before-notebook.d/start-hetdex.sh
-RUN chmod +x /usr/local/bin/before-notebook.d/start-hetdex.sh
+    touch /home/jovyan/.jupyter/mcp_settings.json && \
+    chmod 777 /home/jovyan/.jupyter/mcp_settings.json
 
 USER jovyan
-
-
