@@ -78,7 +78,7 @@ If you have a paid Claude subscription, open a **Terminal** in JupyterLab
 (*File → New → Terminal*) and run:
 
 ```bash
-claude login
+claude \login
 ```
 
 A browser window will open — log in to your Claude account (or copy/paste the
