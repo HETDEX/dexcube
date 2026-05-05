@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Claude ACP agent for Jupyter AI personas
-RUN npm install -g @zed-industries/claude-agent-acp
+RUN npm install -g @zed-industries/claude-agent-acp @anthropic-ai/claude-code
 
 USER jovyan
 
@@ -54,15 +54,13 @@ RUN cp /home/jovyan/dexcube/README.html /home/jovyan/README.html && \
 RUN echo "export PATH=$HOME/.local/bin:${PATH}" >> ~/.bashrc
 
 # Install Jupyter AI with Anthropic and OpenAI backends
-RUN pip install jupyter-ai==3.0.0 langchain-anthropic anthropic
+RUN pip install jupyter-ai==3.0.0 langchain-anthropic langchain-openai anthropic openai
  
 # Copy HETDEX context files for LLM-assisted analysis
 COPY HETDEX_CONTEXT.md /home/jovyan/HETDEX_CONTEXT.md
 COPY CLAUDE.md /home/jovyan/CLAUDE.md
 
 WORKDIR /home/jovyan
-
-USER root
 
 USER root
 RUN chown -R jovyan /home/jovyan/ && \
