@@ -691,7 +691,7 @@ w = CubeWidget(hdu=hdul)
 5. **ADR**: already corrected in public cubes. Do not correct again.
 6. **2017 data**: lower quality. Avoid for LAE science.
 7. **Local sky subtraction**: PDR1 not suited for intensity mapping or absolute SB.
-8. **source_id**: same source observed N times = same source_name but N different source_id values.
+8. **source_id / source_name**: same source observed N times = N different `source_id` values. **The `source_name` (IAU coordinate-based) can also differ between epochs** because centroids shift slightly — do not group solely by `source_name`. Use a spatial cross-match (≤1.5 arcsec) to find all observations of a physical source. In COSMOS, one AGN has 9 observations under 9 different names.
 9. **Close H5 files**: always call `det_file.close()` and `DI.close()` after use.
 10. **Stacking residuals**: raw cubes have ~1% sky residual. Subtract correction spectrum for stacks.
 11. **get_spectra returns None**: cube doesn't cover the coordinate. Check `inside` first.

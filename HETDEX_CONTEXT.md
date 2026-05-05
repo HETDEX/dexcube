@@ -17,9 +17,12 @@ scientific goal is to constrain dark energy via baryonic acoustic oscillations
 at redshifts 1.88 < z < 3.52.
 
 - **Telescope**: Hobby-Eberly Telescope (HET), 10-metre effective aperture
-- **Instrument**: VIRUS — up to 78 IFUs, each feeding a pair of spectrographs
-  with 448 x 1.5"-diameter fibers; ~35,000 spectra per exposure
-- **IFU field of view**: 51" x 51" per IFU
+- **Instrument**: VIRUS — up to 78 IFUs. Each IFU is split into **two spectrograph
+  channels**, each channel read by **2 amplifiers** (4 amplifiers per IFU total).
+  Each amplifier captures **112 fibers** on its own CCD detector (4 CCDs per IFU),
+  giving **448 × 1.5"-diameter fibers per IFU**; ~35,000 spectra per exposure.
+- **IFU field of view**: ~51" × 51" (physical fiber bundle footprint); datacubes
+  are interpolated onto a 104 × 104 grid at 0.5 arcsec/spaxel = **52" × 52"**
 - **VIRUS fill factor**: 0.22 (1/4.6) of the HET's 22'-diameter focal plane
 - **Wavelength coverage**: 3470-5540 Ang (observed frame, in air)
 - **Spectral resolution**: R ~ 750-950 (FWHM ~ 4.7-5.6 Ang); median R ~ 800
@@ -894,6 +897,30 @@ Raw cubes have ~1% sky residual per spectrum. Published stacking analyses
 subtract a correction spectrum from ~200 random sky apertures per field.
 This correction is NOT included in the datacubes.
 
+### Multi-Epoch Source Matching
+
+The `source_name` in HPSC2 encodes sky coordinates to 0.1 arcsec precision. Because
+emission centroids shift slightly between observations (astrometric noise, PSF
+variations), the same physical source can receive **different `source_name` values**
+across epochs. Grouping by `source_name` alone therefore **undercounts repeat
+observations**. Use a spatial cross-match (≤1.5 arcsec) instead:
+
+```python
+coords = SkyCoord(ra=np.array(table['RA']), dec=np.array(table['DEC']), unit='deg')
+used = np.zeros(len(table), dtype=bool)
+spatial_groups = []
+for i in range(len(table)):
+    if used[i]:
+        continue
+    members = np.where(coords[i].separation(coords) < 1.5*u.arcsec)[0]
+    spatial_groups.append(members)
+    used[members] = True
+```
+
+Example: COSMOS AGN `HETDEX J100055.63+022150.4` appears with **9 distinct
+`source_name` entries** but is one physical AGN at RA=150.2318, Dec=+2.364,
+z=1.92. Several COSMOS AGN have ≥6 observations in PDR1.
+
 ### Spectral Extraction: Cube vs Pipeline
 Cube aperture extractions agree with internal pipeline to ~5-10% (blue end
 shows largest difference). Standard aperture in notebooks: r = 3.5 arcsec.
@@ -917,6 +944,7 @@ The raw H5 spec1d is per 2-Ang bin — always divide by 2 and apply wdcor.txt.
 | flag=1 in ifu-index = good | Opposite of MASK HDU convention | ifu-index: flag=1=good; MASK HDU: 0=good |
 | 2017 data noisy/artifacts | Early survey, few IFUs | Avoid 2017 shotids for LAE science |
 | source_id duplicated | Multiple observations of same source | Same source_name, different source_id per observation |
+| Multi-epoch count wrong | Grouping by source_name misses repeat obs | Use spatial cross-match ≤1.5 arcsec; same source can yield up to 9 different names |
 | H5 file won't close | Forgot to call close() | Always call det_file.close() and DI.close() |
 | Raw H5 spectrum too bright | Missing calibration correction | Apply wdcor.txt correction AND divide by 2 |
 | Stack has residual sky bumps | Sky residual not in cubes | Subtract correction from ~200 random sky apertures |

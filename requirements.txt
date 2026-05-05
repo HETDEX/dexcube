@@ -1,6 +1,7 @@
 astrowidgets==0.3.0
 anywidget
 astropy
+astroquery
 numpy
 matplotlib
 scipy
