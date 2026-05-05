@@ -186,9 +186,20 @@ def get_spectra(
         return (nan, nan, nan, wave) if return_wave else (nan, nan, nan)
 
     # ---- per-λ coverage fraction (geometry × data availability) ----
-    finite = np.isfinite(flux_use) & np.isfinite(var_use)
-    covered = np.sum(weights[None, :, :] * finite, axis=(1, 2))          # fractional area with data
-    apcor   = (covered / total_w).astype(np.float32)                     # [0,1]
+    #
+    # A voxel is considered missing if any of the following are true:
+    #   (a) it was excluded by the bitmask logic above (flux_use is NaN)
+    #   (b) ERROR == 0  → no fiber coverage at this spatial/spectral position
+    #   (c) |flux| < 1e-8 → unfilled edge pixels not caught by the mask
+    #
+    # apcor[λ] = sum(weights * has_data[λ]) / total_w
+    has_data = (
+        np.isfinite(flux_use) &         # passes bitmask
+        (error_cube != 0) &             # has fiber coverage
+        (np.abs(flux_cube) >= 1e-8)     # not an unfilled edge pixel
+    ).astype(np.float32)                # shape (nlam, ny_sub, nx_sub)
+
+    apcor = (np.sum(weights[np.newaxis, :, :] * has_data, axis=(1, 2)) / total_w).astype(np.float32)
 
     # ---- weighted sums ----
     f_sum = np.nansum(flux_use * weights, axis=(1, 2)).astype(np.float32)
@@ -212,4 +223,3 @@ def get_spectra(
     if return_wave:
         return spectrum, error, apcor, wave
     return spectrum, error, apcor
-
