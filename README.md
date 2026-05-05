@@ -72,6 +72,26 @@ If you are using Claude Code, Cursor, or another LLM coding assistant, the
 [`CLAUDE.md`](./CLAUDE.md) file in this repo root is loaded automatically and
 provides the critical facts needed to generate correct HETDEX analysis code.
 
+### Using Claude Interactively
+
+If you have a paid Claude subscription, open a **Terminal** in JupyterLab
+(*File → New → Terminal*) and run:
+
+```bash
+claude login
+```
+
+A browser window will open — log in to your Claude account (or copy/paste the
+URL if the browser doesn't open automatically). Once authenticated you can chat
+directly in the terminal, **or** click the chat bubble icon in the left sidebar
+to use the Jupyter AI panel instead.
+
+Claude can read and edit your notebooks interactively, but use caution with
+unsaved work. **Keep any data or results you want to preserve in the `/work`
+directory** (mapped to `./work/pdr1/` on your host). Public users running the
+pre-built image have no persistent storage — anything outside `/work` is lost
+when the container stops.
+
 ---
 
 ## 🐳 Docker Setup
@@ -82,7 +102,8 @@ Docker container. Two options are provided.
 PDR1 data is downloaded to and read from `work/pdr1/` inside the container,
 which maps to `./work/pdr1/` in your current directory on the host — matching
 the path layout used on the TACC JupyterHub. Run the docker command from the
-root of this cloned repo.
+root of this cloned repo. This storage will persist locally even after your 
+docker container shuts down.
 
 ### A) Run the pre-built image (recommended)
 
