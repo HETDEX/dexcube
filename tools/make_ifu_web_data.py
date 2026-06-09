@@ -135,10 +135,10 @@ def convert(src, dst):
     mb = os.path.getsize(dst) / 1e6
     print(f"Done → {dst}  ({mb:.1f} MB)")
     print()
-    print("Deploy steps:")
-    print(f"  1. Upload {dst} to pdr/pdr1/ on TACC")
-    print(f"  2. Upload web/.htaccess to pdr/pdr1/ on TACC")
-    print(f"  3. Upload web/hetdex-cube-search.html anywhere on TACC")
+    print("Deploy steps — upload all three files to dexcube/web/ on TACC:")
+    print(f"  {dst}")
+    print(f"  web/hetdex-cube-search.html")
+    print(f"  web/.htaccess")
 
 
 if __name__ == '__main__':
