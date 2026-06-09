@@ -8,6 +8,7 @@
     Header set Content-Encoding gzip
     Header set Content-Type application/octet-stream
     Header set Cache-Control "public, max-age=86400"
+    Header set Access-Control-Allow-Origin "*"
 </Files>
 
 # Also cache the HTML page for 1 hour
