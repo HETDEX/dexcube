@@ -133,21 +133,12 @@ def convert(src, dst):
         f.write(resp_u8.tobytes())
 
     mb = os.path.getsize(dst) / 1e6
-    print(f"Done → {dst}  ({mb:.1f} MB uncompressed)")
-
-    # Pre-compress for smaller transfer (~3x smaller via HTTP gzip)
-    import gzip, shutil
-    gz_dst = dst + '.gz'
-    with open(dst, 'rb') as f_in, gzip.open(gz_dst, 'wb', compresslevel=9) as f_out:
-        shutil.copyfileobj(f_in, f_out)
-    gz_mb = os.path.getsize(gz_dst) / 1e6
-    print(f"     {gz_dst}  ({gz_mb:.1f} MB gzip-compressed)")
-
+    print(f"Done → {dst}  ({mb:.1f} MB)")
     print()
     print("Deploy steps:")
-    print(f"  1. Rename the compressed file:  mv {gz_dst} {dst}")
-    print(f"  2. Upload {dst} + hetdex-cube-search.html + .htaccess to TACC")
-    print("  3. Apache serves ~{:.1f} MB instead of {:.1f} MB (transparent to browser)".format(gz_mb, mb))
+    print(f"  1. Upload {dst} to pdr/pdr1/ on TACC")
+    print(f"  2. Upload web/.htaccess to pdr/pdr1/ on TACC")
+    print(f"  3. Upload web/hetdex-cube-search.html anywhere on TACC")
 
 
 if __name__ == '__main__':
