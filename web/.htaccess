@@ -1,0 +1,16 @@
+# Serve ifu-data.bin with gzip Content-Encoding so the browser
+# transparently decompresses it — no JS changes needed.
+# Pre-compress the file first: gzip -k ifu-data.bin  (creates ifu-data.bin.gz)
+# Then rename: mv ifu-data.bin.gz ifu-data.bin
+# Apache sends ~2-3 MB instead of 8.6 MB; browser sees the full decompressed binary.
+
+<Files "ifu-data.bin">
+    Header set Content-Encoding gzip
+    Header set Content-Type application/octet-stream
+    Header set Cache-Control "public, max-age=86400"
+</Files>
+
+# Also cache the HTML page for 1 hour
+<Files "hetdex-cube-search.html">
+    Header set Cache-Control "public, max-age=3600"
+</Files>
