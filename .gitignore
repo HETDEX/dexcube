@@ -12,3 +12,4 @@ pipelinecomps.ipynb
 notebooks/__pycache__/
 notebooks/dexcube/__pycache__/
 *.reg
+web/ifu-data.bin
