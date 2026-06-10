@@ -237,10 +237,8 @@ tbody td{padding:5px 8px;white-space:nowrap}
             placeholder="228.78581  51.268036&#10;150.23189  2.363963&#10;&#10;Accepts space, comma, or tab. Lines starting with # ignored."></textarea>
           <div id="catalog-status"></div>
           <div class="hint" style="margin-top:5px">or
-            <label class="btn btn-secondary btn-sm" style="margin-left:4px;cursor:pointer">
-              Upload file
-              <input type="file" id="inp-file" accept=".csv,.txt,.dat" onchange="loadCatalogFile(event)" style="display:none">
-            </label>
+            <button class="btn btn-secondary btn-sm" style="margin-left:4px" onclick="document.getElementById('inp-file').click()">Upload file</button>
+            <input type="file" id="inp-file" accept=".csv,.txt,.dat" onchange="loadCatalogFile(event)" style="display:none">
           </div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-catalog" onclick="doCatalogSearch()" disabled>Search Catalog</button>
@@ -252,10 +250,8 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <label>Shotid(s) — one per line or comma-separated</label>
           <textarea id="inp-shotid" placeholder="20190405020&#10;20190406015&#10;&#10;Returns all IFU cubes for the given observation(s)."></textarea>
           <div class="hint" style="margin-top:5px">or
-            <label class="btn btn-secondary btn-sm" style="margin-left:4px;cursor:pointer">
-              Upload file
-              <input type="file" id="inp-shotid-file" accept=".csv,.txt,.dat" onchange="loadShotidFile(event)" style="display:none">
-            </label>
+            <button class="btn btn-secondary btn-sm" style="margin-left:4px" onclick="document.getElementById('inp-shotid-file').click()">Upload file</button>
+            <input type="file" id="inp-shotid-file" accept=".csv,.txt,.dat" onchange="loadShotidFile(event)" style="display:none">
           </div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-shotid" onclick="doShotidSearch()" disabled>Search Shotids</button>
@@ -267,10 +263,8 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <label>Detectid(s) — one per line or comma-separated</label>
           <textarea id="inp-detectid" placeholder="3001814158&#10;4016409956&#10;3007054408"></textarea>
           <div class="hint" style="margin-top:5px">or
-            <label class="btn btn-secondary btn-sm" style="margin-left:4px;cursor:pointer">
-              Upload file
-              <input type="file" id="inp-detectid-file" accept=".csv,.txt,.dat" onchange="loadDetectidFile(event)" style="display:none">
-            </label>
+            <button class="btn btn-secondary btn-sm" style="margin-left:4px" onclick="document.getElementById('inp-detectid-file').click()">Upload file</button>
+            <input type="file" id="inp-detectid-file" accept=".csv,.txt,.dat" onchange="loadDetectidFile(event)" style="display:none">
           </div>
           <div id="detect-lookup-status" class="lookup-status" style="display:none"></div>
         </div>
