@@ -9,7 +9,7 @@ Usage:
     output : ifu-data.bin    (default)
 
 Output binary format (little-endian):
-    8 bytes  : magic "HETDX1\\x00\\x00"
+    8 bytes  : magic "HETDX2\\x00\\x00"
     4 bytes  : N (Uint32) — number of IFUs
     4 bytes  : padding (zeros)
     N×4 bytes: ra_cen      Float32  — sorted by dec_cen
@@ -22,8 +22,10 @@ Output binary format (little-endian):
                                        3=goods-n   4=nep      5=ssa22  255=other
     N×1 bytes: fwhm_u8     Uint8    — fwhm_virus × 10  (0.0–25.5 arcsec)
     N×1 bytes: resp_u8     Uint8    — response_4540 × 100 (0.00–2.55)
+    N×2 bytes: pa_i16      Int16    — HET tracker PA × 10  (0.1° precision)
+                                       DS9 theta = 360 − (90 + pa + 1.55)
 
-Total: 16 + N×20 bytes ≈ 8.6 MB for N=431,713
+Total: 16 + N×22 bytes ≈ 9.5 MB for N=431,713
 
 Deploy ifu-data.bin in the same directory as hetdex-cube-search.html on TACC.
 """
@@ -106,6 +108,14 @@ def convert(src, dst):
     else:
         resp_u8 = np.zeros(N, dtype=np.uint8)
 
+    if 'pa' in t.colnames:
+        pa_i16 = np.clip(
+            np.round(np.array(t['pa'], dtype=np.float32) * 10),
+            -32768, 32767
+        ).astype(np.int16)
+    else:
+        pa_i16 = np.zeros(N, dtype=np.int16)
+
     # Sort by dec for fast binary-search cone queries in JS
     order = np.argsort(dec, kind='stable')
     ra          = ra[order]
@@ -117,10 +127,11 @@ def convert(src, dst):
     field_id    = field_id[order]
     fwhm_u8     = fwhm_u8[order]
     resp_u8     = resp_u8[order]
+    pa_i16      = pa_i16[order]
 
     print(f"Writing {dst} ...")
     with open(dst, 'wb') as f:
-        f.write(b'HETDX1\x00\x00')           # magic (8 bytes)
+        f.write(b'HETDX2\x00\x00')           # magic v2 (8 bytes)
         f.write(struct.pack('<II', N, 0))      # N + padding (8 bytes)
         f.write(ra.tobytes())
         f.write(dec.tobytes())
@@ -131,6 +142,7 @@ def convert(src, dst):
         f.write(field_id.tobytes())
         f.write(fwhm_u8.tobytes())
         f.write(resp_u8.tobytes())
+        f.write(pa_i16.tobytes())
 
     mb = os.path.getsize(dst) / 1e6
     print(f"Done → {dst}  ({mb:.1f} MB)")

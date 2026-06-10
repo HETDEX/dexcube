@@ -367,12 +367,11 @@ const CUBE_MIRROR_URL = 'https://data.sciserver.mpe.mpg.de/public/hetdex/pdr/pdr
 const FIELD_NAMES     = ['dex-spring','dex-fall','cosmos','goods-n','nep','ssa22'];
 const FIELD_COLORS    = ['cyan','blue','magenta','yellow','green','red']; // DS9 colours
 const CUBE_SIZE_GB    = 0.019;
-const IFU_RADIUS_ARCSEC = 26;
 const MAX_ROWS        = 1000;
 
 // ── IFU data state ───────────────────────────────────────────────────
 let N = 0;
-let raArr, decArr, shotDateArr, shotObsArr, ifuslotArr, flagArr, fieldArr, fwhmArr, respArr;
+let raArr, decArr, shotDateArr, shotObsArr, ifuslotArr, flagArr, fieldArr, fwhmArr, respArr, paArr;
 let isLoaded = false;
 
 // ── Source lookup state ──────────────────────────────────────────────
@@ -502,6 +501,10 @@ async function loadIFUData() {
 
 function parseIFUBuffer(buf) {
   const v = new DataView(buf);
+  // HETDX2 adds pa_i16; HETDX1 (legacy) falls back to pa=0
+  const magic = String.fromCharCode(v.getUint8(0),v.getUint8(1),v.getUint8(2),
+                                    v.getUint8(3),v.getUint8(4),v.getUint8(5));
+  const hasPA = magic === 'HETDX2';
   N = v.getUint32(8,true);
   let o = 16;
   raArr      = new Float32Array(buf,o,N); o+=N*4;
@@ -512,7 +515,8 @@ function parseIFUBuffer(buf) {
   flagArr    = new Uint8Array  (buf,o,N); o+=N;
   fieldArr   = new Uint8Array  (buf,o,N); o+=N;
   fwhmArr    = new Uint8Array  (buf,o,N); o+=N;
-  respArr    = new Uint8Array  (buf,o,N);
+  respArr    = new Uint8Array  (buf,o,N); o+=N;
+  paArr      = hasPA ? new Int16Array(buf,o,N) : null;
 }
 
 function enablePrimaryButtons() {
@@ -628,6 +632,7 @@ function makeHit(i, sep, extra){
     field: FIELD_NAMES[fieldArr[i]]||'other',
     fwhm: fwhmArr[i]/10,
     resp: respArr[i]/100,
+    pa: paArr ? paArr[i]/10 : 0,
     ...extra
   };
 }
@@ -986,12 +991,14 @@ function downloadRegionFile(){
   if(!hits.length)return;
   const lines=[
     '# Region file format: DS9 version 4.1',
+    '# HETDEX IFU footprints — 51"×51" boxes, PA: theta = 360-(90+pa+1.55)',
     'global width=1 font="helvetica 9 normal roman" select=1 highlite=1',
     'fk5',
     ...hits.map(h=>{
       const color=h.flag===1?'green':'red';
-      return `circle(${h.ra.toFixed(5)},${h.dec.toFixed(5)},${IFU_RADIUS_ARCSEC}") `+
-             `# text={${h.shotid}_${h.ifuslot} ${h.field}} color=${color}`;
+      const theta=((268.45-h.pa)%360+360)%360;
+      return `box(${h.ra.toFixed(6)},${h.dec.toFixed(6)},51",51",${theta.toFixed(2)}) `+
+             `# text={${h.shotid}_${h.ifuslot}} color=${color}`;
     })
   ];
   triggerDownload(lines.join('\n'),'hetdex_cubes.reg');
