@@ -238,7 +238,7 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <div id="catalog-status"></div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
             <span class="hint">or upload file:</span>
-            <input type="file" id="inp-file" accept=".csv,.txt,.dat" onchange="loadCatalogFile(event)" style="font-size:.72rem;color:#374151">
+            <input type="file" id="inp-file" accept="*" onchange="loadCatalogFile(event)" style="font-size:.72rem;color:#374151">
           </div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-catalog" onclick="doCatalogSearch()" disabled>Search Catalog</button>
@@ -251,7 +251,7 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <textarea id="inp-shotid" placeholder="20190405020&#10;20190406015&#10;&#10;Returns all IFU cubes for the given observation(s)."></textarea>
           <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
             <span class="hint">or upload file:</span>
-            <input type="file" id="inp-shotid-file" accept=".csv,.txt,.dat" onchange="loadShotidFile(event)" style="font-size:.72rem;color:#374151">
+            <input type="file" id="inp-shotid-file" accept="*" onchange="loadShotidFile(event)" style="font-size:.72rem;color:#374151">
           </div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-shotid" onclick="doShotidSearch()" disabled>Search Shotids</button>
@@ -264,7 +264,7 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <textarea id="inp-detectid" placeholder="3001814158&#10;4016409956&#10;3007054408"></textarea>
           <div style="margin-top:6px;display:flex;align-items:center;gap:6px">
             <span class="hint">or upload file:</span>
-            <input type="file" id="inp-detectid-file" accept=".csv,.txt,.dat" onchange="loadDetectidFile(event)" style="font-size:.72rem;color:#374151">
+            <input type="file" id="inp-detectid-file" accept="*" onchange="loadDetectidFile(event)" style="font-size:.72rem;color:#374151">
           </div>
           <div id="detect-lookup-status" class="lookup-status" style="display:none"></div>
         </div>
