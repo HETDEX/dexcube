@@ -260,7 +260,13 @@ tbody td{padding:5px 8px;white-space:nowrap}
       <div id="tab-detectid" style="display:none">
         <div class="form-group">
           <label>Detectid(s) — one per line or comma-separated</label>
-          <textarea id="inp-detectid" placeholder="5090068724&#10;2101130000123&#10;&#10;Requires source-lookup.bin (see tools/make_source_lookup.py)."></textarea>
+          <textarea id="inp-detectid" placeholder="3001814158&#10;4016409956&#10;3007054408"></textarea>
+          <div class="hint" style="margin-top:5px">or
+            <span class="file-btn-wrap">
+              <button class="btn btn-secondary btn-sm" style="margin-left:4px">Upload file</button>
+              <input type="file" id="inp-detectid-file" accept=".csv,.txt,.dat" onchange="loadDetectidFile(event)">
+            </span>
+          </div>
           <div id="detect-lookup-status" class="lookup-status" style="display:none"></div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-detectid" onclick="doDetectidSearch()" disabled>Search Detectids</button>
@@ -1137,6 +1143,14 @@ function loadCatalogFile(e){
     const{sources,errors}=parseCatalog(ev.target.result);
     updateCatalogStatus(sources.length,errors.length);
   };
+  reader.readAsText(file);
+}
+
+// ── Detect ID file upload ─────────────────────────────────────────────
+function loadDetectidFile(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{document.getElementById('inp-detectid').value=ev.target.result;};
   reader.readAsText(file);
 }
 
