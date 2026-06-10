@@ -356,6 +356,13 @@ tbody td{padding:5px 8px;white-space:nowrap}
       <span class="size-est" id="size-est"></span>
     </div>
     <div class="dl-body">
+      <div class="coord-fmt-row" style="margin-bottom:8px">
+        <span class="filter-label">Server:</span>
+        <button id="mirror-tacc" class="fmt-pill active" onclick="setMirror(0)"
+          title="TACC Corral, Texas — primary">TACC</button>
+        <button id="mirror-mpe"  class="fmt-pill"        onclick="setMirror(1)"
+          title="MPE SciServer, Germany — mirror">MPE mirror</button>
+      </div>
       <div class="dl-buttons">
         <button class="btn btn-green" id="btn-dl-selected" onclick="downloadSelected()" style="display:none">
           ⬇ Download selected (<span id="sel-dl-count">0</span>)
@@ -379,6 +386,7 @@ tbody td{padding:5px 8px;white-space:nowrap}
 const IFU_DATA_URL    = 'ifu-data.bin';
 const SOURCE_LOOKUP_URL = 'source-lookup.bin';
 const CUBE_BASE_URL   = 'https://web.corral.tacc.utexas.edu/hetdex/HETDEX/pdr/pdr1/datacubes';
+const CUBE_MIRROR_URL = 'https://data.sciserver.mpe.mpg.de/public/hetdex/pdr/pdr1/datacubes';
 const FIELD_NAMES     = ['dex-spring','dex-fall','cosmos','goods-n','nep','ssa22'];
 const FIELD_COLORS    = ['cyan','blue','magenta','yellow','green','red']; // DS9 colours
 const CUBE_SIZE_GB    = 0.019;
@@ -399,6 +407,7 @@ let slLoaded = false, slLoading = false;
 
 // ── UI state ─────────────────────────────────────────────────────────
 let useSexa     = false;
+let activeMirror = CUBE_BASE_URL;
 let rawResults  = [];
 let activeMode  = 'single';
 let sortCol     = null, sortAsc = true;
@@ -979,7 +988,14 @@ function rowClick(e,tr,key){
 
 // ── Download helpers ──────────────────────────────────────────────────
 function cubeURL(shotid,ifuslot){
-  return `${CUBE_BASE_URL}/${shotid}/dex_cube_${shotid}_${ifuslot}.fits`;
+  return `${activeMirror}/${shotid}/dex_cube_${shotid}_${ifuslot}.fits`;
+}
+
+function setMirror(idx){
+  activeMirror = idx===0 ? CUBE_BASE_URL : CUBE_MIRROR_URL;
+  document.getElementById('mirror-tacc').classList.toggle('active', idx===0);
+  document.getElementById('mirror-mpe').classList.toggle('active', idx===1);
+  if(rawResults.length) applyFilters();
 }
 
 function getFilteredHits(){
