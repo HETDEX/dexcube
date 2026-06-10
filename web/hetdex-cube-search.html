@@ -822,7 +822,9 @@ async function doSourceidSearch(){
 function applyFilters(){
   const qf=document.getElementById('filter-quality').value;
   const ff=document.getElementById('filter-field').value;
-  const fw=parseFloat(document.getElementById('filter-fwhm').value);
+  const fwEl=document.getElementById('filter-fwhm');
+  let fw=parseFloat(fwEl.value);
+  if(!isNaN(fw)&&fw<1.2){fw=1.2;fwEl.value='1.2';}
   const fr=parseFloat(document.getElementById('filter-resp').value);
   let hits=rawResults;
   if(qf==='good')  hits=hits.filter(h=>h.flag===1);
