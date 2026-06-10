@@ -203,14 +203,6 @@ tbody td{padding:5px 8px;white-space:nowrap}
 
       <!-- Single coordinate -->
       <div id="tab-single">
-        <div class="form-group" style="margin-bottom:6px">
-          <label>Object name <span style="font-weight:400;color:#94a3b8;font-size:.68rem">— resolves to coordinates via NED/SIMBAD</span></label>
-          <div style="display:flex;gap:6px">
-            <input type="text" id="inp-coord-name" placeholder="NGC 1275, M31, 3C 273…" style="flex:1">
-            <button class="btn btn-secondary btn-sm" onclick="resolveToCoords()">Resolve</button>
-          </div>
-          <div id="coord-name-status" class="hint" style="min-height:1.1em"></div>
-        </div>
         <div class="form-row">
           <div class="form-group">
             <label>RA <span class="example-link" onclick="loadExample()">Example</span></label>
@@ -227,14 +219,22 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <button id="fmt-deg" class="fmt-pill active" onclick="setCoordFormat('deg')">Decimal°</button>
           <button id="fmt-sex" class="fmt-pill" onclick="setCoordFormat('sex')">Sexagesimal</button>
         </div>
+        <div class="form-group" style="margin-top:4px;margin-bottom:6px">
+          <label>Object name <span style="font-weight:400;color:#94a3b8;font-size:.68rem">— resolves to coordinates via NED/SIMBAD</span></label>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="inp-coord-name" placeholder="e.g. HETDEX J151508.6+511608.7, NGC 1275, 3C 273" style="flex:1">
+            <button class="btn btn-secondary btn-sm" onclick="resolveToCoords()">Resolve</button>
+          </div>
+          <div id="coord-name-status" class="hint" style="min-height:1.1em"></div>
+        </div>
         <div class="form-group">
           <label>Search radius</label>
           <div class="range-row">
-            <input type="range" id="inp-radius" min="5" max="120" value="37"
-              oninput="document.getElementById('radius-val').textContent=this.value+'″'">
+            <input type="range" id="inp-radius" min="5" max="7200" value="37"
+              oninput="document.getElementById('radius-val').textContent=fmtRadius(+this.value)">
             <span class="range-val" id="radius-val">37″</span>
           </div>
-          <div class="hint">37″ = IFU diameter. Increase to find adjacent cubes.</div>
+          <div class="hint">37″ radius → single IFU (52″×52″ cube) · max 2°</div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-single" onclick="doSingleSearch()" disabled>Search</button>
       </div>
@@ -301,8 +301,8 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <div class="form-group">
           <label>Search radius</label>
           <div class="range-row">
-            <input type="range" id="inp-radius-name" min="5" max="120" value="37"
-              oninput="document.getElementById('radius-val-name').textContent=this.value+'″'">
+            <input type="range" id="inp-radius-name" min="5" max="7200" value="37"
+              oninput="document.getElementById('radius-val-name').textContent=fmtRadius(+this.value)">
             <span class="range-val" id="radius-val-name">37″</span>
           </div>
         </div>
@@ -420,6 +420,13 @@ let rawResults  = [];
 let activeMode  = 'single';
 let sortCol     = null, sortAsc = true;
 let selectedKeys = new Set();
+
+// ── Radius display helper ─────────────────────────────────────────────
+function fmtRadius(arcsec) {
+  if (arcsec >= 3600) return (arcsec/3600).toFixed(2).replace(/\.?0+$/,'') + '°';
+  if (arcsec >= 60)   return (arcsec/60).toFixed(1).replace(/\.?0+$/,'')  + '′';
+  return arcsec + '″';
+}
 
 // ── Coordinate utilities ─────────────────────────────────────────────
 function raToHMS(ra) {
