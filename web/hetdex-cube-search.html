@@ -327,8 +327,8 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <input type="number" id="filter-fwhm" placeholder="—" min="1.2" max="10" step="0.1"
           value="3.2" style="width:58px" onchange="applyFilters()" title="Max seeing FWHM (arcsec)">
         <span class="filter-label">" Resp≥</span>
-        <input type="number" id="filter-resp" placeholder="—" min="0" max="1" step="0.01"
-          style="width:52px" onchange="applyFilters()" title="Min response_4540">
+        <input type="number" id="filter-resp" placeholder="—" min="0.08" max="0.6" step="0.01"
+          value="0.08" style="width:52px" onchange="applyFilters()" title="Min response_4540">
       </div>
     </div>
     <div class="card-body">
@@ -825,7 +825,10 @@ function applyFilters(){
   const fwEl=document.getElementById('filter-fwhm');
   let fw=parseFloat(fwEl.value);
   if(!isNaN(fw)&&fw<1.2){fw=1.2;fwEl.value='1.2';}
-  const fr=parseFloat(document.getElementById('filter-resp').value);
+  const frEl=document.getElementById('filter-resp');
+  let fr=parseFloat(frEl.value);
+  if(!isNaN(fr)&&fr<0.08){fr=0.08;frEl.value='0.08';}
+  if(!isNaN(fr)&&fr>0.6) {fr=0.6; frEl.value='0.6'; }
   let hits=rawResults;
   if(qf==='good')  hits=hits.filter(h=>h.flag===1);
   if(ff!=='all')   hits=hits.filter(h=>h.field===ff);
