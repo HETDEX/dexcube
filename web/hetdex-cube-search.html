@@ -324,8 +324,8 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <option value="ssa22">ssa22</option>
         </select>
         <span class="filter-label">Seeing≤</span>
-        <input type="number" id="filter-fwhm" placeholder="—" min="0" max="10" step="0.1"
-          value="1.2" style="width:58px" onchange="applyFilters()" title="Max seeing FWHM (arcsec)">
+        <input type="number" id="filter-fwhm" placeholder="—" min="1.2" max="10" step="0.1"
+          value="3.2" style="width:58px" onchange="applyFilters()" title="Max seeing FWHM (arcsec)">
         <span class="filter-label">" Resp≥</span>
         <input type="number" id="filter-resp" placeholder="—" min="0" max="1" step="0.01"
           style="width:52px" onchange="applyFilters()" title="Min response_4540">
@@ -931,7 +931,7 @@ function renderResults(hits){
     {label:'Resp.',col:'resp',sort:true},
     {label:'RA',col:'ra',sort:true},
     {label:'Dec',col:'dec',sort:true},
-    ...(hasSep?[{label:'Sep.″',col:'sep',sort:true}]:[]),
+    ...(hasSep?[{label:'Sep.′',col:'sep',sort:true}]:[]),
     ...(isCat ?[{label:'Sources',col:'nSrc',sort:true}]:[]),
     {label:'',col:null},
   ];
@@ -956,7 +956,7 @@ function renderResults(hits){
       ?`<span class="badge badge-good">good</span>`
       :`<span class="badge badge-bad">flagged</span>`;
     const fieldBadge=`<span class="badge badge-field">${h.field}</span>`;
-    const extraCol=hasSep?`<td>${h.sep.toFixed(1)}</td>`
+    const extraCol=hasSep?`<td>${(h.sep/60).toFixed(3)}</td>`
                   :isCat ?`<td>${h.nSrc}</td>`:'';
     return `<tr data-key="${key}" class="${sel?'selected':''}" onclick="rowClick(event,this,'${key}')">
       <td class="td-check" onclick="event.stopPropagation()">
