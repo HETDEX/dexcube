@@ -190,7 +190,6 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <button class="tab" data-tab="shotid">Shot ID</button>
         <button class="tab" data-tab="detectid">Detect ID</button>
         <button class="tab" data-tab="sourceid">Source ID</button>
-        <button class="tab" data-tab="name">Name</button>
       </div>
 
       <!-- Single coordinate -->
@@ -214,7 +213,7 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <div class="form-group" style="margin-top:4px;margin-bottom:6px">
           <label>Object name <span style="font-weight:400;color:#94a3b8;font-size:.68rem">— resolves to coordinates via NED/SIMBAD</span></label>
           <div style="display:flex;gap:6px">
-            <input type="text" id="inp-coord-name" placeholder="e.g. HETDEX J151508.6+511608.7, NGC 1275, 3C 273" style="flex:1">
+            <input type="text" id="inp-coord-name" placeholder="e.g. M101, HETDEX J151508.6+511608.7" style="flex:1">
             <button class="btn btn-secondary btn-sm" onclick="resolveToCoords()">Resolve</button>
           </div>
           <div id="coord-name-status" class="hint" style="min-height:1.1em"></div>
@@ -277,30 +276,6 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <button class="btn btn-primary btn-full" id="btn-sourceid" onclick="doSourceidSearch()" disabled>Search Source IDs</button>
       </div>
 
-      <!-- Name resolver (NED / SIMBAD via CDS Sesame) -->
-      <div id="tab-name" style="display:none">
-        <div class="form-group">
-          <label>Object name</label>
-          <div style="display:flex;gap:6px">
-            <input type="text" id="inp-name" placeholder="NGC 1275, M31, 3C 273, HETDEX J152315…" style="flex:1">
-            <button class="btn btn-secondary btn-sm" onclick="resolveName()">Resolve</button>
-          </div>
-          <div id="name-status" class="hint" style="margin-top:4px;min-height:1.2em"></div>
-        </div>
-        <div id="name-coords" style="display:none;margin-bottom:9px;padding:7px 10px;
-          background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:.75rem;color:#166534">
-        </div>
-        <div class="form-group">
-          <label>Search radius</label>
-          <div class="range-row">
-            <input type="range" id="inp-radius-name" min="5" max="7200" value="37"
-              oninput="document.getElementById('radius-val-name').textContent=fmtRadius(+this.value)">
-            <span class="range-val" id="radius-val-name">37″</span>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-full" id="btn-name" onclick="doNameSearch()" disabled>Search</button>
-        <div class="hint" style="margin-top:6px">Resolves via <a href="https://ned.ipac.caltech.edu" target="_blank" rel="noopener">NED</a> &amp; <a href="https://simbad.u-strasbg.fr" target="_blank" rel="noopener">SIMBAD</a> (CDS Sesame)</div>
-      </div>
 
     </div><!-- card-body -->
   </div><!-- query card -->
@@ -542,10 +517,6 @@ function enablePrimaryButtons() {
   ['btn-single','btn-catalog','btn-shotid'].forEach(id=>{
     document.getElementById(id).disabled = false;
   });
-  // btn-name enabled only after both data loaded AND a name has been resolved
-  if (resolvedNameRA !== null) {
-    document.getElementById('btn-name').disabled = false;
-  }
 }
 
 // ── Data loading — source lookup (lazy) ──────────────────────────────
@@ -1104,6 +1075,7 @@ function updateCatalogStatus(n,nerr){
 }
 
 // ── Name resolver — fills RA/Dec inputs in Coordinate tab ────────────
+// ── Name resolver — fills RA/Dec inputs via SIMBAD TAP ───────────────
 async function resolveToCoords() {
   const name = document.getElementById('inp-coord-name').value.trim();
   if (!name) return;
@@ -1111,72 +1083,25 @@ async function resolveToCoords() {
   status.style.color = '';
   status.textContent = 'Resolving…';
   try {
-    const url = 'https://cdsweb.u-strasbg.fr/cgi-bin/nph-sesame/-oxjson/SN?'
-                + encodeURIComponent(name);
+    const safeN = name.replace(/'/g, "''");
+    const query = `SELECT ra,dec FROM basic JOIN ident ON oidref=oid WHERE id='${safeN}'`;
+    const url   = 'https://simbad.u-strasbg.fr/simbad/sim-tap/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=json&QUERY='
+                  + encodeURIComponent(query);
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-    const resolvers = data?.Target?.Resolver;
-    if (!resolvers || resolvers.length === 0) {
-      status.textContent = 'Not found in NED or SIMBAD.';
+    if (!data.data || !data.data.length) {
+      status.textContent = 'Not found in SIMBAD. Try full name (e.g. "NGC 5457" for M101).';
       return;
     }
-    const r = resolvers[0];
-    document.getElementById('inp-ra').value  = useSexa ? raToHMS(r.jradeg)   : r.jradeg.toFixed(5);
-    document.getElementById('inp-dec').value = useSexa ? decToDMS(r.jdedeg)  : r.jdedeg.toFixed(5);
-    const src = (r.name || '').replace(/^[SN]=/, '');
+    const [ra, dec] = data.data[0];
+    document.getElementById('inp-ra').value  = useSexa ? raToHMS(ra)   : ra.toFixed(5);
+    document.getElementById('inp-dec').value = useSexa ? decToDMS(dec) : dec.toFixed(5);
     status.style.color = '#059669';
-    status.textContent = (src ? src + ' — ' : '') + r.jradeg.toFixed(5) + ', ' + r.jdedeg.toFixed(5);
+    status.textContent = ra.toFixed(5) + ', ' + dec.toFixed(5);
   } catch(e) {
     status.textContent = 'Error: ' + e.message;
   }
-}
-
-// ── Name resolver (CDS Sesame → NED / SIMBAD) ────────────────────────
-let resolvedNameRA = null, resolvedNameDec = null;
-
-async function resolveName() {
-  const name = document.getElementById('inp-name').value.trim();
-  if (!name) return;
-  const status  = document.getElementById('name-status');
-  const coordEl = document.getElementById('name-coords');
-  status.textContent = 'Resolving…';
-  coordEl.style.display = 'none';
-  resolvedNameRA = resolvedNameDec = null;
-  document.getElementById('btn-name').disabled = true;
-  try {
-    // CDS Sesame: queries SIMBAD (S) and NED (N) in parallel
-    const url = 'https://cdsweb.u-strasbg.fr/cgi-bin/nph-sesame/-oxjson/SN?'
-                + encodeURIComponent(name);
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-    const resolvers = data?.Target?.Resolver;
-    if (!resolvers || resolvers.length === 0) {
-      status.textContent = 'Object not found in NED or SIMBAD.';
-      return;
-    }
-    const r = resolvers[0];
-    resolvedNameRA  = r.jradeg;
-    resolvedNameDec = r.jdedeg;
-    const src = (r.name || 'resolved').replace(/^[A-Z]=/, '');
-    coordEl.textContent = src + ' — RA = ' + resolvedNameRA.toFixed(5)
-                        + ', Dec = ' + resolvedNameDec.toFixed(5);
-    coordEl.style.display = '';
-    status.textContent = '';
-    if (isLoaded) document.getElementById('btn-name').disabled = false;
-  } catch(e) {
-    status.textContent = 'Resolver error: ' + e.message;
-  }
-}
-
-function doNameSearch() {
-  if (!isLoaded || resolvedNameRA === null) return;
-  const r = parseFloat(document.getElementById('inp-radius-name').value);
-  activeMode = 'single';
-  rawResults = coneSearch(resolvedNameRA, resolvedNameDec, r);
-  rawResults.sort((a, b) => a.sep - b.sep);
-  applyFilters();
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────
@@ -1185,7 +1110,7 @@ document.querySelectorAll('.tab').forEach(btn=>{
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     const t=btn.dataset.tab;
-    ['single','catalog','shotid','detectid','sourceid','name'].forEach(id=>{
+    ['single','catalog','shotid','detectid','sourceid'].forEach(id=>{
       document.getElementById('tab-'+id).style.display=t===id?'':'none';
     });
     // Trigger source lookup load when tab is first opened
@@ -1226,9 +1151,6 @@ document.getElementById('inp-coord-name').addEventListener('keydown',e=>{
 });
 
 // ── Enter on name input: Resolve; Shift+Enter or second Enter: Search ─
-document.getElementById('inp-name').addEventListener('keydown',e=>{
-  if(e.key==='Enter') resolveName();
-});
 
 // ── Init ──────────────────────────────────────────────────────────────
 loadIFUData();
