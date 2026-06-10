@@ -203,6 +203,14 @@ tbody td{padding:5px 8px;white-space:nowrap}
 
       <!-- Single coordinate -->
       <div id="tab-single">
+        <div class="form-group" style="margin-bottom:6px">
+          <label>Object name <span style="font-weight:400;color:#94a3b8;font-size:.68rem">— resolves to coordinates via NED/SIMBAD</span></label>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="inp-coord-name" placeholder="NGC 1275, M31, 3C 273…" style="flex:1">
+            <button class="btn btn-secondary btn-sm" onclick="resolveToCoords()">Resolve</button>
+          </div>
+          <div id="coord-name-status" class="hint" style="min-height:1.1em"></div>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label>RA <span class="example-link" onclick="loadExample()">Example</span></label>
@@ -1094,6 +1102,35 @@ function updateCatalogStatus(n,nerr){
     (nerr?`<span class="parse-err"> · ${nerr} skipped</span>`:'');
 }
 
+// ── Name resolver — fills RA/Dec inputs in Coordinate tab ────────────
+async function resolveToCoords() {
+  const name = document.getElementById('inp-coord-name').value.trim();
+  if (!name) return;
+  const status = document.getElementById('coord-name-status');
+  status.style.color = '';
+  status.textContent = 'Resolving…';
+  try {
+    const url = 'https://cdsweb.u-strasbg.fr/cgi-bin/nph-sesame/-oxjson/SN?'
+                + encodeURIComponent(name);
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const resolvers = data?.Target?.Resolver;
+    if (!resolvers || resolvers.length === 0) {
+      status.textContent = 'Not found in NED or SIMBAD.';
+      return;
+    }
+    const r = resolvers[0];
+    document.getElementById('inp-ra').value  = useSexa ? raToHMS(r.jradeg)   : r.jradeg.toFixed(5);
+    document.getElementById('inp-dec').value = useSexa ? decToDMS(r.jdedeg)  : r.jdedeg.toFixed(5);
+    const src = (r.name || '').replace(/^[SN]=/, '');
+    status.style.color = '#059669';
+    status.textContent = (src ? src + ' — ' : '') + r.jradeg.toFixed(5) + ', ' + r.jdedeg.toFixed(5);
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+  }
+}
+
 // ── Name resolver (CDS Sesame → NED / SIMBAD) ────────────────────────
 let resolvedNameRA = null, resolvedNameDec = null;
 
@@ -1182,6 +1219,9 @@ function loadCatalogFile(e){
   document.getElementById(id).addEventListener('keydown',e=>{
     if(e.key==='Enter')doSingleSearch();
   });
+});
+document.getElementById('inp-coord-name').addEventListener('keydown',e=>{
+  if(e.key==='Enter') resolveToCoords();
 });
 
 // ── Enter on name input: Resolve; Shift+Enter or second Enter: Search ─
