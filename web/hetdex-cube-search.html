@@ -189,7 +189,6 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <button class="tab" data-tab="catalog">Catalog</button>
         <button class="tab" data-tab="shotid">Shot ID</button>
         <button class="tab" data-tab="detectid">Detect ID</button>
-        <button class="tab" data-tab="sourceid">Source ID</button>
       </div>
 
       <!-- Single coordinate -->
@@ -278,15 +277,6 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <button class="btn btn-primary btn-full" id="btn-detectid" onclick="doDetectidSearch()" disabled>Search Detectids</button>
       </div>
 
-      <!-- Source ID -->
-      <div id="tab-sourceid" style="display:none">
-        <div class="form-group">
-          <label>Source ID(s) — one per line or comma-separated</label>
-          <textarea id="inp-sourceid" placeholder="2101130000123&#10;2101130000456&#10;&#10;Requires source-lookup.bin (see tools/make_source_lookup.py)."></textarea>
-          <div id="source-lookup-status" class="lookup-status" style="display:none"></div>
-        </div>
-        <button class="btn btn-primary btn-full" id="btn-sourceid" onclick="doSourceidSearch()" disabled>Search Source IDs</button>
-      </div>
 
 
     </div><!-- card-body -->
@@ -560,7 +550,6 @@ async function loadSourceLookup(statusId) {
     el.className='lookup-status ok';
     el.textContent=`Loaded — ${SN.toLocaleString()} sources`;
     document.getElementById('btn-detectid').disabled=false;
-    document.getElementById('btn-sourceid').disabled=false;
     return true;
   } catch(e) {
     slLoading=false;
@@ -711,24 +700,6 @@ function lookupByDetectId(ids){
   return results;
 }
 
-function lookupBySourceId(ids){
-  const results=[];
-  const seen=new Set();
-  for(const id of ids){
-    const p=parseId64(id);if(!p)continue;
-    const candidates=sourceIdMap.get(p.lo)||[];
-    for(const i of candidates){
-      if(slSrcIdHi[i]!==p.hi)continue;
-      const shotid=slShotDate[i]*1000+slShotObs[i];
-      const ifuslot=String(slIfuslot[i]).padStart(3,'0');
-      const key=`${shotid}_${ifuslot}`;
-      if(seen.has(key))continue; seen.add(key);
-      const hit=findIFURow(shotid,ifuslot,slRa[i],slDec[i]);
-      results.push(hit);
-    }
-  }
-  return results;
-}
 
 function findIFURow(shotid,ifuslot,ra,dec){
   // Search ifu-data for the matching shotid+ifuslot to get quality columns.
@@ -789,17 +760,6 @@ async function doDetectidSearch(){
   applyFilters();
 }
 
-async function doSourceidSearch(){
-  if(!isLoaded)return;
-  const ok=await loadSourceLookup('source-lookup-status');
-  if(!ok)return;
-  const ids=document.getElementById('inp-sourceid').value
-    .split(/[\s,;]+/).map(s=>s.trim()).filter(Boolean);
-  if(!ids.length){alert('Enter at least one source ID.');return;}
-  activeMode='sourceid';
-  rawResults=lookupBySourceId(ids);
-  applyFilters();
-}
 
 // ── Filtering & sorting ───────────────────────────────────────────────
 function applyFilters(){
@@ -1122,13 +1082,12 @@ document.querySelectorAll('.tab').forEach(btn=>{
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     const t=btn.dataset.tab;
-    ['single','catalog','shotid','detectid','sourceid'].forEach(id=>{
+    ['single','catalog','shotid','detectid'].forEach(id=>{
       document.getElementById('tab-'+id).style.display=t===id?'':'none';
     });
     // Trigger source lookup load when tab is first opened
-    if((t==='detectid'||t==='sourceid')&&!slLoaded&&!slLoading){
-      const statusId=t==='detectid'?'detect-lookup-status':'source-lookup-status';
-      loadSourceLookup(statusId);
+    if(t==='detectid'&&!slLoaded&&!slLoading){
+      loadSourceLookup('detect-lookup-status');
     }
   });
 });
