@@ -77,6 +77,13 @@ input[type=range]{width:100%;accent-color:#1a3a6b}
 .parse-ok{color:#059669;font-size:.7rem;margin-top:3px}
 .parse-err{color:#dc2626;font-size:.7rem}
 
+/* Coordinate format toggle */
+.coord-fmt-row{display:flex;align-items:center;gap:5px;margin-top:6px;margin-bottom:9px}
+.fmt-pill{padding:2px 10px;border-radius:10px;border:1px solid #cbd5e1;background:#f8fafc;
+  color:#374151;font-size:.7rem;font-weight:500;cursor:pointer;transition:all .15s}
+.fmt-pill.active{background:#1a3a6b;color:#fff;border-color:#1a3a6b}
+.fmt-pill:hover:not(.active){background:#e2e8f0}
+
 /* Lookup status */
 .lookup-status{margin-top:6px;padding:7px 10px;border-radius:6px;font-size:.75rem;
   background:#f1f5f9;border:1px solid #e2e8f0;color:#475569}
@@ -191,6 +198,7 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <button class="tab" data-tab="shotid">Shot ID</button>
         <button class="tab" data-tab="detectid">Detect ID</button>
         <button class="tab" data-tab="sourceid">Source ID</button>
+        <button class="tab" data-tab="name">Name</button>
       </div>
 
       <!-- Single coordinate -->
@@ -198,14 +206,19 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <div class="form-row">
           <div class="form-group">
             <label>RA <span class="example-link" onclick="loadExample()">Example</span></label>
-            <input type="text" id="inp-ra" placeholder="228.78581">
+            <input type="text" id="inp-ra" placeholder="228.78581" value="228.78581">
           </div>
           <div class="form-group">
             <label>Dec</label>
-            <input type="text" id="inp-dec" placeholder="51.268036">
+            <input type="text" id="inp-dec" placeholder="51.268036" value="51.268036">
           </div>
         </div>
         <div id="coord-hint" class="hint">Decimal degrees &nbsp;·&nbsp; e.g. 228.78581, 51.268036</div>
+        <div class="coord-fmt-row">
+          <span class="filter-label">Format:</span>
+          <button id="fmt-deg" class="fmt-pill active" onclick="setCoordFormat('deg')">Decimal°</button>
+          <button id="fmt-sex" class="fmt-pill" onclick="setCoordFormat('sex')">Sexagesimal</button>
+        </div>
         <div class="form-group">
           <label>Search radius</label>
           <div class="range-row">
@@ -262,6 +275,31 @@ tbody td{padding:5px 8px;white-space:nowrap}
           <div id="source-lookup-status" class="lookup-status" style="display:none"></div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-sourceid" onclick="doSourceidSearch()" disabled>Search Source IDs</button>
+      </div>
+
+      <!-- Name resolver (NED / SIMBAD via CDS Sesame) -->
+      <div id="tab-name" style="display:none">
+        <div class="form-group">
+          <label>Object name</label>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="inp-name" placeholder="NGC 1275, M31, 3C 273, HETDEX J152315…" style="flex:1">
+            <button class="btn btn-secondary btn-sm" onclick="resolveName()">Resolve</button>
+          </div>
+          <div id="name-status" class="hint" style="margin-top:4px;min-height:1.2em"></div>
+        </div>
+        <div id="name-coords" style="display:none;margin-bottom:9px;padding:7px 10px;
+          background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:.75rem;color:#166534">
+        </div>
+        <div class="form-group">
+          <label>Search radius</label>
+          <div class="range-row">
+            <input type="range" id="inp-radius-name" min="5" max="120" value="37"
+              oninput="document.getElementById('radius-val-name').textContent=this.value+'″'">
+            <span class="range-val" id="radius-val-name">37″</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-name" onclick="doNameSearch()" disabled>Search</button>
+        <div class="hint" style="margin-top:6px">Resolves via <a href="https://ned.ipac.caltech.edu" target="_blank" rel="noopener">NED</a> &amp; <a href="https://simbad.u-strasbg.fr" target="_blank" rel="noopener">SIMBAD</a> (CDS Sesame)</div>
       </div>
 
     </div><!-- card-body -->
@@ -406,17 +444,23 @@ function parseDec(s) {
   return parseFloat(s);
 }
 
-function toggleCoords() {
-  useSexa = !useSexa;
-  const btn = document.getElementById('coord-toggle');
-  btn.textContent = useSexa ? 'HMS/DMS' : 'DEG';
+function setCoordFormat(mode) {
+  const wasSexa = useSexa;
+  useSexa = mode === 'sex';
+  // Sync header toggle button (legacy)
+  const hdr = document.getElementById('coord-toggle');
+  if (hdr) hdr.textContent = useSexa ? 'HMS/DMS' : 'DEG';
+  // Sync in-form pills
+  document.getElementById('fmt-deg').classList.toggle('active', !useSexa);
+  document.getElementById('fmt-sex').classList.toggle('active', useSexa);
+  // Update placeholders and hint
   const raIn  = document.getElementById('inp-ra');
   const decIn = document.getElementById('inp-dec');
   if (useSexa) {
     raIn.placeholder  = '15:15:08.6  or  15h15m08.6s';
     decIn.placeholder = '+51:16:04.9  or  +51d16m04.9s';
     document.getElementById('coord-hint').textContent =
-      'Sexagesimal · e.g. 15:15:08.6, +51:16:04.9  or  15h15m08.6s, +51d16m04.9s';
+      'Sexagesimal · e.g. 15:15:08.6, +51:16:04.9';
   } else {
     raIn.placeholder  = '228.78581';
     decIn.placeholder = '51.268036';
@@ -424,6 +468,10 @@ function toggleCoords() {
       'Decimal degrees · e.g. 228.78581, 51.268036';
   }
   if (rawResults.length) applyFilters();
+}
+
+function toggleCoords() {
+  setCoordFormat(useSexa ? 'deg' : 'sex');
 }
 
 // ── Data loading — IFU index ─────────────────────────────────────────
@@ -481,6 +529,10 @@ function enablePrimaryButtons() {
   ['btn-single','btn-catalog','btn-shotid'].forEach(id=>{
     document.getElementById(id).disabled = false;
   });
+  // btn-name enabled only after both data loaded AND a name has been resolved
+  if (resolvedNameRA !== null) {
+    document.getElementById('btn-name').disabled = false;
+  }
 }
 
 // ── Data loading — source lookup (lazy) ──────────────────────────────
@@ -1026,13 +1078,60 @@ function updateCatalogStatus(n,nerr){
     (nerr?`<span class="parse-err"> · ${nerr} skipped</span>`:'');
 }
 
+// ── Name resolver (CDS Sesame → NED / SIMBAD) ────────────────────────
+let resolvedNameRA = null, resolvedNameDec = null;
+
+async function resolveName() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) return;
+  const status  = document.getElementById('name-status');
+  const coordEl = document.getElementById('name-coords');
+  status.textContent = 'Resolving…';
+  coordEl.style.display = 'none';
+  resolvedNameRA = resolvedNameDec = null;
+  document.getElementById('btn-name').disabled = true;
+  try {
+    // CDS Sesame: queries SIMBAD (S) and NED (N) in parallel
+    const url = 'https://cdsweb.u-strasbg.fr/cgi-bin/nph-sesame/-oxjson/SN?'
+                + encodeURIComponent(name);
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const resolvers = data?.Target?.Resolver;
+    if (!resolvers || resolvers.length === 0) {
+      status.textContent = 'Object not found in NED or SIMBAD.';
+      return;
+    }
+    const r = resolvers[0];
+    resolvedNameRA  = r.jradeg;
+    resolvedNameDec = r.jdedeg;
+    const src = (r.name || 'resolved').replace(/^[A-Z]=/, '');
+    coordEl.textContent = src + ' — RA = ' + resolvedNameRA.toFixed(5)
+                        + ', Dec = ' + resolvedNameDec.toFixed(5);
+    coordEl.style.display = '';
+    status.textContent = '';
+    if (isLoaded) document.getElementById('btn-name').disabled = false;
+  } catch(e) {
+    status.textContent = 'Resolver error: ' + e.message;
+  }
+}
+
+function doNameSearch() {
+  if (!isLoaded || resolvedNameRA === null) return;
+  const r = parseFloat(document.getElementById('inp-radius-name').value);
+  activeMode = 'single';
+  rawResults = coneSearch(resolvedNameRA, resolvedNameDec, r);
+  rawResults.sort((a, b) => a.sep - b.sep);
+  applyFilters();
+}
+
 // ── Tab switching ─────────────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     const t=btn.dataset.tab;
-    ['single','catalog','shotid','detectid','sourceid'].forEach(id=>{
+    ['single','catalog','shotid','detectid','sourceid','name'].forEach(id=>{
       document.getElementById('tab-'+id).style.display=t===id?'':'none';
     });
     // Trigger source lookup load when tab is first opened
@@ -1067,6 +1166,11 @@ function loadCatalogFile(e){
   document.getElementById(id).addEventListener('keydown',e=>{
     if(e.key==='Enter')doSingleSearch();
   });
+});
+
+// ── Enter on name input: Resolve; Shift+Enter or second Enter: Search ─
+document.getElementById('inp-name').addEventListener('keydown',e=>{
+  if(e.key==='Enter') resolveName();
 });
 
 // ── Init ──────────────────────────────────────────────────────────────
