@@ -18,7 +18,6 @@ a{color:#1d4ed8;text-decoration:none}a:hover{text-decoration:underline}
 .logo span{color:#f59e0b}
 .subtitle{font-size:.75rem;color:#93c5fd;display:none}
 @media(min-width:540px){.subtitle{display:block}}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 #status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
   border-radius:20px;font-size:.72rem;font-weight:500;
   background:rgba(255,255,255,.12);color:#e2e8f0;white-space:nowrap}
@@ -28,10 +27,6 @@ a{color:#1d4ed8;text-decoration:none}a:hover{text-decoration:underline}
 .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 .dot.spin{animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.toggle-btn{padding:3px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.3);
-  background:rgba(255,255,255,.1);color:#e2e8f0;font-size:.72rem;font-weight:600;
-  cursor:pointer;white-space:nowrap;letter-spacing:.03em}
-.toggle-btn:hover{background:rgba(255,255,255,.2)}
 
 /* Progress */
 #progress-bar-wrap{height:3px;background:#1a3a6b;width:100%}
@@ -179,9 +174,6 @@ tbody td{padding:5px 8px;white-space:nowrap}
   <div class="logo">HETDEX <span>PDR1</span></div>
   <div id="status-pill"><span class="dot spin"></span><span id="status-text">Loading…</span></div>
   <div class="subtitle">Hobby-Eberly Telescope Dark Energy Experiment</div>
-  <div class="header-right">
-    <button class="toggle-btn" id="coord-toggle" onclick="toggleCoords()" title="Switch between decimal degrees and sexagesimal">DEG</button>
-  </div>
 </header>
 <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
 
@@ -469,20 +461,21 @@ function parseDec(s) {
 }
 
 function setCoordFormat(mode) {
-  const wasSexa = useSexa;
   useSexa = mode === 'sex';
-  // Sync header toggle button (legacy)
-  const hdr = document.getElementById('coord-toggle');
-  if (hdr) hdr.textContent = useSexa ? 'HMS/DMS' : 'DEG';
-  // Sync in-form pills
   document.getElementById('fmt-deg').classList.toggle('active', !useSexa);
   document.getElementById('fmt-sex').classList.toggle('active', useSexa);
-  // Update placeholders and hint
   const raIn  = document.getElementById('inp-ra');
   const decIn = document.getElementById('inp-dec');
+  // Convert existing values to the new format
+  const ra  = parseRA(raIn.value);
+  const dec = parseDec(decIn.value);
+  if (!isNaN(ra) && !isNaN(dec)) {
+    raIn.value  = useSexa ? raToHMS(ra)   : ra.toFixed(5);
+    decIn.value = useSexa ? decToDMS(dec) : dec.toFixed(5);
+  }
   if (useSexa) {
-    raIn.placeholder  = '15:15:08.6  or  15h15m08.6s';
-    decIn.placeholder = '+51:16:04.9  or  +51d16m04.9s';
+    raIn.placeholder  = '15:15:08.6';
+    decIn.placeholder = '+51:16:04.9';
     document.getElementById('coord-hint').textContent =
       'Sexagesimal · e.g. 15:15:08.6, +51:16:04.9';
   } else {
@@ -492,10 +485,6 @@ function setCoordFormat(mode) {
       'Decimal degrees · e.g. 228.78581, 51.268036';
   }
   if (rawResults.length) applyFilters();
-}
-
-function toggleCoords() {
-  setCoordFormat(useSexa ? 'deg' : 'sex');
 }
 
 // ── Data loading — IFU index ─────────────────────────────────────────
