@@ -252,6 +252,12 @@ tbody td{padding:5px 8px;white-space:nowrap}
         <div class="form-group">
           <label>Shotid(s) — one per line or comma-separated</label>
           <textarea id="inp-shotid" placeholder="20190405020&#10;20190406015&#10;&#10;Returns all IFU cubes for the given observation(s)."></textarea>
+          <div class="hint" style="margin-top:5px">or
+            <span class="file-btn-wrap">
+              <button class="btn btn-secondary btn-sm" style="margin-left:4px">Upload file</button>
+              <input type="file" id="inp-shotid-file" accept=".csv,.txt,.dat" onchange="loadShotidFile(event)">
+            </span>
+          </div>
         </div>
         <button class="btn btn-primary btn-full" id="btn-shotid" onclick="doShotidSearch()" disabled>Search Shotids</button>
       </div>
@@ -1143,6 +1149,14 @@ function loadCatalogFile(e){
     const{sources,errors}=parseCatalog(ev.target.result);
     updateCatalogStatus(sources.length,errors.length);
   };
+  reader.readAsText(file);
+}
+
+// ── Shot ID file upload ───────────────────────────────────────────────
+function loadShotidFile(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{document.getElementById('inp-shotid').value=ev.target.result;};
   reader.readAsText(file);
 }
 
