@@ -205,6 +205,7 @@ tbody td{padding:5px 8px;white-space:nowrap}
             <input type="text" id="inp-dec" placeholder="51.268036">
           </div>
         </div>
+        <div id="coord-hint" class="hint">Decimal degrees &nbsp;·&nbsp; e.g. 228.78581, 51.268036</div>
         <div class="form-group">
           <label>Search radius</label>
           <div class="range-row">
@@ -414,9 +415,13 @@ function toggleCoords() {
   if (useSexa) {
     raIn.placeholder  = '15:15:08.6  or  15h15m08.6s';
     decIn.placeholder = '+51:16:04.9  or  +51d16m04.9s';
+    document.getElementById('coord-hint').textContent =
+      'Sexagesimal · e.g. 15:15:08.6, +51:16:04.9  or  15h15m08.6s, +51d16m04.9s';
   } else {
     raIn.placeholder  = '228.78581';
     decIn.placeholder = '51.268036';
+    document.getElementById('coord-hint').textContent =
+      'Decimal degrees · e.g. 228.78581, 51.268036';
   }
   if (rawResults.length) applyFilters();
 }
@@ -1010,8 +1015,9 @@ function showToast(msg){
 }
 
 function loadExample(){
-  document.getElementById('inp-ra').value='228.78581';
-  document.getElementById('inp-dec').value='51.268036';
+  // Lyman Alpha Blob at z=2.53
+  document.getElementById('inp-ra').value  = useSexa ? raToHMS(228.78581)  : '228.78581';
+  document.getElementById('inp-dec').value = useSexa ? decToDMS(51.268036) : '51.268036';
 }
 
 function updateCatalogStatus(n,nerr){
