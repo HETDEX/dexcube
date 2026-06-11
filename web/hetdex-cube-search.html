@@ -882,7 +882,7 @@ function renderResults(hits){
   // Build header
   const colDefs=[
     {label:'',col:null,cls:'td-check'},
-    {label:'#',col:null},
+    {label:'',col:null},
     {label:'Shotid ⬇',col:'shotid',sort:true},
     {label:'IFU',col:'ifuslot',sort:true},
     {label:'Field',col:'field',sort:true},
@@ -893,7 +893,6 @@ function renderResults(hits){
     {label:'Dec',col:'dec',sort:true},
     ...(hasSep?[{label:'Sep.′',col:'sep',sort:true}]:[]),
     ...(isCat ?[{label:'Sources',col:'nSrc',sort:true}]:[]),
-    {label:'',col:null},
   ];
 
   const thead=document.getElementById('table-head');
@@ -922,7 +921,7 @@ function renderResults(hits){
       <td class="td-check" onclick="event.stopPropagation()">
         <input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${key}',this.checked,this.closest('tr'))">
       </td>
-      <td>${idx+1}</td>
+      <td class="td-dl"><a href="${url}" target="_blank" rel="noopener">FITS↗</a></td>
       <td class="td-mono"><a href="${url}" class="shotid-dl" title="Download cube">${h.shotid}</a></td>
       <td>${h.ifuslot}</td>
       <td>${fieldBadge}</td>
@@ -932,7 +931,6 @@ function renderResults(hits){
       <td class="td-mono">${fmtRA(h.ra)}</td>
       <td class="td-mono">${fmtDec(h.dec)}</td>
       ${extraCol}
-      <td class="td-dl"><a href="${url}" target="_blank" rel="noopener">FITS↗</a></td>
     </tr>`;
   }).join('');
 
