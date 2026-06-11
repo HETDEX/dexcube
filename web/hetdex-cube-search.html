@@ -991,7 +991,16 @@ function triggerDownload(text,filename){
 function downloadSelected(){
   const hits=getFilteredHits().filter(h=>selectedKeys.has(hitKey(h)));
   if(!hits.length){showToast('No cubes selected');return;}
-  triggerDownload(hits.map(h=>cubeURL(h.shotid,h.ifuslot)).join('\n'),'urls_selected.txt');
+  showToast(`Starting ${hits.length} download${hits.length>1?'s':''}…`);
+  hits.forEach((h,i)=>{
+    setTimeout(()=>{
+      const a=document.createElement('a');
+      a.href=cubeURL(h.shotid,h.ifuslot);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    },i*400);
+  });
 }
 
 function downloadAll(){
