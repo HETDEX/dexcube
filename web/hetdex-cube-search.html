@@ -146,6 +146,7 @@ a.shotid-dl:hover{color:#1E61A3;text-decoration-style:solid}
 .badge-field{background:#eff6ff;color:#1e40af}
 .empty-state{text-align:center;color:#94a3b8;padding:32px 16px;font-size:.82rem}
 .empty-state .icon{font-size:2rem;margin-bottom:8px}
+#tbl-actions{display:none;padding:8px 0 2px;border-top:1px solid #f1f5f9;margin-top:4px}
 
 /* Download section */
 #download-section{grid-column:1/-1;display:none;background:#fff;
@@ -320,6 +321,11 @@ a.shotid-dl:hover{color:#1E61A3;text-decoration-style:solid}
           <tbody id="table-body"></tbody>
         </table>
       </div>
+      <div id="tbl-actions">
+        <button class="btn btn-green" id="btn-tbl-dl-sel" onclick="downloadSelected()" style="display:none">
+          ⬇ Download selected (<span id="tbl-sel-count">0</span>)
+        </button>
+      </div>
     </div>
   </div>
 
@@ -341,9 +347,13 @@ a.shotid-dl:hover{color:#1E61A3;text-decoration-style:solid}
         <button class="btn btn-green" id="btn-dl-selected" onclick="downloadSelected()" style="display:none">
           ⬇ Download selected (<span id="sel-dl-count">0</span>)
         </button>
-        <button class="btn btn-green" onclick="downloadAll()">⬇ Download all (urls.txt)</button>
+        <button class="btn btn-green" onclick="downloadAll()">⬇ Save urls.txt</button>
         <button class="btn btn-amber" onclick="downloadRegionFile()">⬡ DS9 region file</button>
         <button class="btn btn-secondary" onclick="copyURLs()">⎘ Copy URLs</button>
+      </div>
+      <div style="font-size:.72rem;color:#64748b;margin-top:2px">
+        Save <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px">urls.txt</code>
+        then run the wget command below from your <code style="background:#f1f5f9;padding:1px 4px;border-radius:3px">pdr1/</code> directory:
       </div>
       <div class="code-block" id="wget-block">
         <button class="copy-icon" onclick="copyWget()">copy</button>
@@ -827,12 +837,16 @@ function updateSelUI(){
   const sc=document.getElementById('sel-count');
   const bd=document.getElementById('btn-dl-selected');
   const sd=document.getElementById('sel-dl-count');
+  const bt=document.getElementById('btn-tbl-dl-sel');
+  const st=document.getElementById('tbl-sel-count');
   if(n>0){
     sc.style.display='';sc.textContent=`${n} selected`;
     bd.style.display='';sd.textContent=n;
+    bt.style.display='';st.textContent=n;
   }else{
     sc.style.display='none';
     bd.style.display='none';
+    bt.style.display='none';
   }
   // Update master checkbox indeterminate state
   const rows=document.querySelectorAll('#table-body tr[data-key]');
@@ -852,14 +866,17 @@ function renderResults(hits){
   const countEl =document.getElementById('result-count');
   const dlSec   =document.getElementById('download-section');
 
+  const tblAct=document.getElementById('tbl-actions');
   if(!hits.length){
     isEmpty.style.display='';wrap.style.display='none';
     head.style.display='none';fg.style.display='none';
+    tblAct.style.display='none';
     dlSec.classList.remove('visible');return;
   }
 
   isEmpty.style.display='none';wrap.style.display='block';
   head.style.display='flex';fg.style.display='flex';
+  tblAct.style.display='block';
 
   const shown=Math.min(hits.length,MAX_ROWS);
   const extra=hits.length>MAX_ROWS
@@ -883,6 +900,7 @@ function renderResults(hits){
     {label:'Dec',col:'dec',sort:true},
     ...(hasSep?[{label:'Sep.′',col:'sep',sort:true}]:[]),
     ...(isCat ?[{label:'Sources',col:'nSrc',sort:true}]:[]),
+    {label:'',col:null},
   ];
 
   const thead=document.getElementById('table-head');
@@ -921,6 +939,7 @@ function renderResults(hits){
       <td class="td-mono">${fmtRA(h.ra)}</td>
       <td class="td-mono">${fmtDec(h.dec)}</td>
       ${extraCol}
+      <td class="td-dl"><a href="${url}" target="_blank" rel="noopener">FITS↗</a></td>
     </tr>`;
   }).join('');
 
