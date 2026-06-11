@@ -137,6 +137,9 @@ tbody td{padding:5px 8px;white-space:nowrap}
   text-decoration:none;border:1px solid #bfdbfe}
 .td-dl a:hover{background:#dbeafe}
 .td-mono{font-family:'SFMono-Regular',Consolas,monospace;font-size:.75rem}
+a.shotid-dl{color:inherit;text-decoration:underline;text-decoration-style:dotted;
+  text-underline-offset:2px;cursor:pointer}
+a.shotid-dl:hover{color:#1E61A3;text-decoration-style:solid}
 .badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:.68rem;font-weight:600}
 .badge-good{background:#dcfce7;color:#15803d}
 .badge-bad{background:#fee2e2;color:#b91c1c}
@@ -870,7 +873,7 @@ function renderResults(hits){
   const colDefs=[
     {label:'',col:null,cls:'td-check'},
     {label:'#',col:null},
-    {label:'Shotid',col:'shotid',sort:true},
+    {label:'Shotid ⬇',col:'shotid',sort:true},
     {label:'IFU',col:'ifuslot',sort:true},
     {label:'Field',col:'field',sort:true},
     {label:'Quality',col:'flag',sort:true},
@@ -880,7 +883,6 @@ function renderResults(hits){
     {label:'Dec',col:'dec',sort:true},
     ...(hasSep?[{label:'Sep.′',col:'sep',sort:true}]:[]),
     ...(isCat ?[{label:'Sources',col:'nSrc',sort:true}]:[]),
-    {label:'',col:null},
   ];
 
   const thead=document.getElementById('table-head');
@@ -910,7 +912,7 @@ function renderResults(hits){
         <input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${key}',this.checked,this.closest('tr'))">
       </td>
       <td>${idx+1}</td>
-      <td class="td-mono">${h.shotid}</td>
+      <td class="td-mono"><a href="${url}" class="shotid-dl" title="Download cube">${h.shotid}</a></td>
       <td>${h.ifuslot}</td>
       <td>${fieldBadge}</td>
       <td>${flagBadge}</td>
@@ -919,7 +921,6 @@ function renderResults(hits){
       <td class="td-mono">${fmtRA(h.ra)}</td>
       <td class="td-mono">${fmtDec(h.dec)}</td>
       ${extraCol}
-      <td class="td-dl"><a href="${url}" target="_blank" rel="noopener">FITS↗</a></td>
     </tr>`;
   }).join('');
 
