@@ -885,13 +885,13 @@ function renderResults(hits){
     {label:'Download',col:null},
     {label:'Shotid ⬇',col:'shotid',sort:true},
     {label:'IFU',col:'ifuslot',sort:true},
+    ...(hasSep?[{label:'Sep.′',col:'sep',sort:true}]:[]),
     {label:'Field',col:'field',sort:true},
     {label:'Quality',col:'flag',sort:true},
     {label:'Seeing″',col:'fwhm',sort:true},
     {label:'Resp.',col:'resp',sort:true},
     {label:'RA',col:'ra',sort:true},
     {label:'Dec',col:'dec',sort:true},
-    ...(hasSep?[{label:'Sep.′',col:'sep',sort:true}]:[]),
     ...(isCat ?[{label:'Sources',col:'nSrc',sort:true}]:[]),
   ];
 
@@ -900,7 +900,7 @@ function renderResults(hits){
     if(ci===0) return `<th class="td-check"><input type="checkbox" id="master-cb"
       onchange="toggleSelectAll(this.checked)"></th>`;
     const sortCls=c.sort?'sortable':'';
-    const activeCls=sortCol===c.col?(sortAsc?' sorted-asc':' sorted-desc'):'';
+    const activeCls=(c.col&&sortCol===c.col)?(sortAsc?' sorted-asc':' sorted-desc'):'';
     const click=c.sort?`onclick="onHeaderClick('${c.col}')"`:c.col?'':``;
     return `<th class="${sortCls}${activeCls}" data-col="${c.col||''}" ${click}>${c.label}</th>`;
   }).join('')+'</tr>';
@@ -915,8 +915,8 @@ function renderResults(hits){
       ?`<span class="badge badge-good">good</span>`
       :`<span class="badge badge-bad">flagged</span>`;
     const fieldBadge=`<span class="badge badge-field">${h.field}</span>`;
-    const extraCol=hasSep?`<td>${(h.sep/60).toFixed(3)}</td>`
-                  :isCat ?`<td>${h.nSrc}</td>`:'';
+    const sepCol =hasSep?`<td>${(h.sep/60).toFixed(3)}</td>`:'';
+    const srcCol =isCat ?`<td>${h.nSrc}</td>`:'';
     return `<tr data-key="${key}" class="${sel?'selected':''}" onclick="rowClick(event,this,'${key}')">
       <td class="td-check" onclick="event.stopPropagation()">
         <input type="checkbox" ${sel?'checked':''} onchange="toggleRow('${key}',this.checked,this.closest('tr'))">
@@ -924,13 +924,14 @@ function renderResults(hits){
       <td class="td-dl"><a href="${url}" target="_blank" rel="noopener">FITS↗</a></td>
       <td class="td-mono"><a href="${url}" class="shotid-dl" title="Download cube">${h.shotid}</a></td>
       <td>${h.ifuslot}</td>
+      ${sepCol}
       <td>${fieldBadge}</td>
       <td>${flagBadge}</td>
       <td>${h.fwhm.toFixed(1)}</td>
       <td>${h.resp.toFixed(2)}</td>
       <td class="td-mono">${fmtRA(h.ra)}</td>
       <td class="td-mono">${fmtDec(h.dec)}</td>
-      ${extraCol}
+      ${srcCol}
     </tr>`;
   }).join('');
 
